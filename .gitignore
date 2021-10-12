@@ -1,0 +1,8 @@
+*.DS_Store
+../data
+*.iml
+*.xml
+*.csv
+*.mp3
+*.mp4
+*.wav
