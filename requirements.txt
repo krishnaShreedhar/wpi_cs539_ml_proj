@@ -1,0 +1,7 @@
+opencv-python
+nibabel
+tensorflow
+pandas
+dicom2nifti
+numpy
+sklearn
