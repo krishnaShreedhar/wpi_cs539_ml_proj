@@ -1,6 +1,6 @@
 *.DS_Store
-../data
-../outputs
+data
+outputs
 *.iml
 *.xml
 *.csv
