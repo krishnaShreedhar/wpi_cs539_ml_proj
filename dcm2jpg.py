@@ -34,6 +34,6 @@ for patient in patient_list:
             print("Failed scan type: ", mri_type)
             print()
             log_patient_scan = {'Failed Patient': patient, 'Failed Scan Type': mri_type}
-            df_appended = df.append(log_patient_scan, ignore_index=True)
+            df_appended = df.append(log_patient_scan, ignore_index=True) # this line might not be correct..waiting on results
     print()
 df_appended.to_csv("log_failed_patient_scan.csv")
