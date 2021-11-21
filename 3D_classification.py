@@ -17,6 +17,7 @@ from scipy import ndimage
 import random
 import matplotlib.pyplot as plt
 
+tf.enable_eager_execution()
 
 if tf.test.gpu_device_name():
     print('Default GPU Device: {}'.format(tf.test.gpu_device_name()))
