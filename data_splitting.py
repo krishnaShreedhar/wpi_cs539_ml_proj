@@ -8,14 +8,14 @@ import shutil
 import sklearn
 from sklearn.model_selection import StratifiedKFold, StratifiedShuffleSplit, train_test_split
 
-import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras import layers
+#import tensorflow as tf
+#from tensorflow import keras
+#from tensorflow.keras import layers
 
-import nibabel as nib
-from scipy import ndimage
-import random
-import matplotlib.pyplot as plt
+#import nibabel as nib
+#from scipy import ndimage
+#import random
+#import matplotlib.pyplot as plt
 
 # Define these parameters
 # fold_num = 1 # fold_x to process and run model with
@@ -26,7 +26,7 @@ test_split_percent = 0.1
 mri_type = "T1w" # the MRI scan type you want to split and use for the model
 # project_folder = "C:\\Users\\Nick\\Desktop\\WPI\\Machine Learning\\Semester Project\\"
 # patient_folder = project_folder + 'Nifti2\\' # generated nii files from dcm2jpg.py
-project_folder = "project_folder_" + mri_type + "/"
+project_folder = "project_folder_correct_" + mri_type + "/"
 if not os.path.isdir(project_folder):
     os.makedirs(project_folder)
 patient_folder = 'Nifti/' # generated nii files from dcm2jpg.py
@@ -49,13 +49,13 @@ decay_rate = 0.96 # decay rate for the exponential learning rate scheduler
 # Load Data -- custom for us, data already downloaded -- preprocess using dcm2jpg.py to get .nii files
 mri_types = ['FLAIR', 'T1w', 'T1wCE', 'T2w']
 ratings = ['0', '1'] # possible ratings an image can have
-patients = os.listdir(patient_folder)
+#patients = os.listdir(patient_folder)
 df_labels = pd.read_csv(label_csv, dtype = str) # str to keep zero padded patient IDs
 
 labels = df_labels['MGMT_value'].tolist()
 
-print(patients)
-print(len(patients))
+#print(patients)
+#print(len(patients))
 print()
 print(labels)
 print()
@@ -123,7 +123,7 @@ print(df_labels)
 
 
 img_names = []
-# patients = df_labels["BraTS21ID_padded"].tolist()
+patients = df_labels["BraTS21ID_padded"].tolist()
 for i_name in patients:
     img_names.append(i_name+".nii")
 print(img_names)
@@ -152,20 +152,20 @@ for testindex in range(0, len(X_test)):
     img_name = X_test[testindex]
     im_label = y_test[testindex]
 
-    folder_name = project_folder + 'cross_val_folds\\'
+    folder_name = project_folder + 'cross_val_folds/'
     if not os.path.isdir(folder_name):
         os.makedirs(folder_name)
 
-    test_fold = folder_name + 'test\\'
+    test_fold = folder_name + 'test/'
     if not os.path.isdir(test_fold):
         os.makedirs(test_fold)
 
     for cls in labels:
-        class_x = test_fold + cls + "\\"
+        class_x = test_fold + cls + "/"
         if not os.path.isdir(class_x):
             os.makedirs(class_x)
     try:
-        shutil.copy(patient_folder + img_name[0:5] + "\\" + mri_type + "\\" + img_name, test_fold + im_label + "\\" + str(img_name))
+        shutil.copy(patient_folder + img_name[0:5] + "/" + mri_type + "/" + img_name, test_fold + im_label + "/" + str(img_name))
     except Exception:
         print("This image does not exist as Nifti file: ", img_name)
 
@@ -193,21 +193,21 @@ for tlist in train_index_list:
         img_name = X_trainval[tindex]
         im_label = y_trainval[tindex]
 
-        folder_name = project_folder + 'cross_val_folds\\fold_' + str(folder) + "\\"
+        folder_name = project_folder + 'cross_val_folds/fold_' + str(folder) + "/"
         if not os.path.isdir(folder_name):
             os.makedirs(folder_name)
 
-        train_fold = folder_name + 'train\\'
+        train_fold = folder_name + 'train/'
         if not os.path.isdir(train_fold):
             os.makedirs(train_fold)
 
         for cls in labels:
-            class_x = train_fold + cls + "\\"
+            class_x = train_fold + cls + "/"
             if not os.path.isdir(class_x):
                 os.makedirs(class_x)
 
         try:
-            shutil.copy(patient_folder + img_name[0:5] + "\\" + mri_type + "\\" + img_name, train_fold + im_label + "\\" + str(img_name))
+            shutil.copy(patient_folder + img_name[0:5] + "/" + mri_type + "/" + img_name, train_fold + im_label + "/" + str(img_name))
         except Exception:
             print("This image does not exist as Nifti file: ", img_name)
 
@@ -221,20 +221,20 @@ for vlist in valid_index_list:
         img_name = X_trainval[vindex]
         im_label = y_trainval[vindex]
 
-        folder_name = project_folder + 'cross_val_folds\\fold_' + str(folder) + "\\"
+        folder_name = project_folder + 'cross_val_folds/fold_' + str(folder) + "/"
         if not os.path.isdir(folder_name):
             os.makedirs(folder_name)
 
-        val_fold = folder_name + 'val\\'
+        val_fold = folder_name + 'val/'
         if not os.path.isdir(val_fold):
             os.makedirs(val_fold)
 
         for cls in labels:
-            class_x = val_fold + cls + "\\"
+            class_x = val_fold + cls + "/"
             if not os.path.isdir(class_x):
                 os.makedirs(class_x)
         try:
-            shutil.copy(patient_folder + img_name[0:5] + "\\" + mri_type + "\\" + img_name, val_fold + im_label + "\\" + str(img_name))
+            shutil.copy(patient_folder + img_name[0:5] + "/" + mri_type + "/" + img_name, val_fold + im_label + "/" + str(img_name))
         except Exception:
             print("This image does not exist as Nifti file: ", img_name)
 
