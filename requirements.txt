@@ -5,3 +5,6 @@ pandas
 dicom2nifti
 numpy
 sklearn
+matplotlib
+scipy
+numpy
