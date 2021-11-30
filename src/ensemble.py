@@ -5,8 +5,8 @@ from tensorflow.keras import layers
 from tensorflow.keras import Sequential
 import pandas as pd
 
-
 import constants
+
 
 def get_intermediate_output_1(model, data, layer_name='my_layer'):
     extractor = keras.Model(inputs=model.inputs,
@@ -80,13 +80,9 @@ def parse_args():
     return args
 
 
-
-
-
 def main():
     args = parse_args()
     create_ensembled_features(args)
-
 
 
 if __name__ == '__main__':
