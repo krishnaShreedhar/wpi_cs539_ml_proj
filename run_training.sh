@@ -5,7 +5,8 @@
 #SBATCH -e std_err_script.err
 #SBATCH -t 12:00:00
 #SBATCH -C P100
-#SBATCH --mem 64G
+#SBATCH --mem 80G
+#SBATCH --gres=gpu:1
 #SBATCH -p short
 
 echo "Starting to run SBATCH SCRIPT"
