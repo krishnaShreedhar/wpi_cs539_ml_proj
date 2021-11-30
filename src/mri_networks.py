@@ -44,7 +44,7 @@ print(device_lib.list_local_devices())
 fold = 1
 fold_num = 1
 mri_type = "FLAIR"
-data_folder = "../../../project_folder_" + mri_type + "/" + "cross_val_folds/" + "fold_" + str(fold_num) + "/"
+data_folder = "../../project_folder_correct_" + mri_type + "/" + "cross_val_folds/" + "fold_" + str(fold_num) + "/"
 # data_folder = os.getcwd() + '/data/project_folder_FLAIR/cross_val_folds/fold_1/'
 STR_REPORT += f"\n \n Data folder: {data_folder}"
 
@@ -120,7 +120,7 @@ def process_scan(path):
 
 # Processing .nii images for train/val/test sets
 ratings = [0, 1]
-project_folder = "project_folder_" + mri_type + "/"  # os.getcwd() + '/data/project_folder_FLAIR/'
+project_folder = "../../project_folder_correct_" + mri_type + "/"  # os.getcwd() + '/data/project_folder_FLAIR/'
 paths_test = []
 y_test = []
 for rating in ratings:
@@ -306,7 +306,7 @@ model.summary()
 STR_REPORT += f"\n {model.summary()}"
 
 # Compile model.
-epochs = 50  # 100
+epochs = 5  # 100
 initial_lr = 0.01  # 0.0001 # initial learning rate
 decay_steps = 100000  # # decay steps in the exponential learning rate scheduler
 decay_rate = 0.96  # decay rate for the exponential learning rate scheduler
@@ -567,7 +567,7 @@ model = ResNet50(input_shape, classes=2)
 model.summary()
 
 # Compile model.
-epochs = 50  # 100
+epochs = 5  # 100
 initial_lr = 0.001  # 0.0001 # initial learning rate
 decay_steps = 100000  # # decay steps in the exponential learning rate scheduler
 decay_rate = 0.96  # decay rate for the exponential learning rate scheduler
