@@ -4,7 +4,9 @@ from tensorflow import keras
 from tensorflow.keras import layers
 from tensorflow.keras import Sequential
 import pandas as pd
+import numpy as np
 
+import utils
 import constants
 
 
@@ -24,27 +26,31 @@ def get_intermediate_output_2(model, data, layer_name='my_layer'):
 
 def get_varied_features(list_models, data):
     features = []
+    for model in list_models:
+        temp_features = model.predict(data)
+        features.append(temp_features)
     return features
 
 
-def get_features():
-    model = Sequential([
-        layers.Conv2D(32, 3, activation='relu'),
-        layers.Conv2D(32, 3, activation='relu'),
-        layers.MaxPooling2D(2),
-        layers.Conv2D(32, 3, activation='relu'),
-        layers.Conv2D(32, 3, activation='relu'),
-        layers.GlobalMaxPooling2D(),
-        layers.Dense(10),
-    ])
-    list_models = [model, model]
-    data = []
-    get_varied_features(list_models, data)
+# def get_features():
+#     model = Sequential([
+#         layers.Conv2D(32, 3, activation='relu'),
+#         layers.Conv2D(32, 3, activation='relu'),
+#         layers.MaxPooling2D(2),
+#         layers.Conv2D(32, 3, activation='relu'),
+#         layers.Conv2D(32, 3, activation='relu'),
+#         layers.GlobalMaxPooling2D(),
+#         layers.Dense(10),
+#     ])
+#     list_models = [model, model]
+#     data = []
+#     get_varied_features(list_models, data)
 
 
 def _load_model(model_path, **kwargs):
     # TODO: Add load model code
-    model = []
+    model = keras.models.load_model("my_h5_model.h5")
+    print(model.summary())
     return model
 
 
@@ -58,9 +64,12 @@ def load_models(list_paths):
 
 
 def create_ensembled_features(args):
-    list_paths = []
+    list_paths = ["../models/3d_image_classification_lr1e1_softmax_batch1_rotate.h5"]
     list_models = load_models(list_paths)
-    list_records = get_varied_features()
+
+    list_data_paths = ["../outputs/Nifti/T1w/.nii"]
+    data = np.array([utils.process_scan(path) for path in list_data_paths])
+    list_records = get_varied_features(list_models, data)
 
     df_ensemble = pd.DataFrame.from_records(list_records)
 
