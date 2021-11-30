@@ -34,7 +34,7 @@ if tf.test.gpu_device_name():
     print('Default GPU Device: {}'.format(tf.test.gpu_device_name()))
     DEVICE = "gpu"
 else:
-    STR_REPORT += f"\n Please install GPU version of TF"
+    print(f"\n Please install GPU version of TF")
 print(tf.executing_eagerly())
 print()
 
@@ -51,7 +51,7 @@ STR_REPORT += f"\n \n Data folder: {data_folder}"
 train_img_len = len(os.listdir(data_folder + "train/" + "0/")) + len(os.listdir(data_folder + "train/" + "1/"))
 val_img_len = len(os.listdir(data_folder + "val/" + "0/")) + len(os.listdir(data_folder + "val/" + "1/"))
 
-print()
+print("init--1")
 
 STR_REPORT += f"\n \n Train image length: {train_img_len}"
 STR_REPORT += f"\n \n Validation image length: {val_img_len}"
@@ -218,6 +218,7 @@ def validation_preprocessing(volume, label):
 train_loader = tf.data.Dataset.from_tensor_slices((x_train, y_train))
 validation_loader = tf.data.Dataset.from_tensor_slices((x_val, y_val))
 
+print("load_dataset--1")
 # Augment them on the fly during training.
 train_dataset = (
     train_loader.shuffle(len(x_train))
@@ -238,31 +239,31 @@ images, labels = list(data)[0]
 images = images.numpy()
 image = images[0]
 STR_REPORT += f"\n Dimension of the MRI scan is: {image.shape}"
-plt.imshow(np.squeeze(image[:, :, 20]), cmap="gray")
+# plt.imshow(np.squeeze(image[:, :, 20]), cmap="gray")
 
 
-def plot_slices(num_rows, num_columns, width, height, data):
-    """Plot a montage of 20 CT slices"""
-    data = np.rot90(np.array(data))
-    data = np.transpose(data)
-    data = np.reshape(data, (num_rows, num_columns, width, height))
-    rows_data, columns_data = data.shape[0], data.shape[1]
-    heights = [slc[0].shape[0] for slc in data]
-    widths = [slc.shape[1] for slc in data[0]]
-    fig_width = 12.0
-    fig_height = fig_width * sum(heights) / sum(widths)
-    f, axarr = plt.subplots(
-        rows_data,
-        columns_data,
-        figsize=(fig_width, fig_height),
-        gridspec_kw={"height_ratios": heights},
-    )
-    for i in range(rows_data):
-        for j in range(columns_data):
-            axarr[i, j].imshow(data[i][j], cmap="gray")
-            axarr[i, j].axis("off")
-    plt.subplots_adjust(wspace=0, hspace=0, left=0, right=1, bottom=0, top=1)
-    plt.show()
+# def plot_slices(num_rows, num_columns, width, height, data):
+#     """Plot a montage of 20 CT slices"""
+#     data = np.rot90(np.array(data))
+#     data = np.transpose(data)
+#     data = np.reshape(data, (num_rows, num_columns, width, height))
+#     rows_data, columns_data = data.shape[0], data.shape[1]
+#     heights = [slc[0].shape[0] for slc in data]
+#     widths = [slc.shape[1] for slc in data[0]]
+#     fig_width = 12.0
+#     fig_height = fig_width * sum(heights) / sum(widths)
+#     f, axarr = plt.subplots(
+#         rows_data,
+#         columns_data,
+#         figsize=(fig_width, fig_height),
+#         gridspec_kw={"height_ratios": heights},
+#     )
+#     for i in range(rows_data):
+#         for j in range(columns_data):
+#             axarr[i, j].imshow(data[i][j], cmap="gray")
+#             axarr[i, j].axis("off")
+#     plt.subplots_adjust(wspace=0, hspace=0, left=0, right=1, bottom=0, top=1)
+#     plt.show()
 
 
 # Visualize montage of slices.
@@ -302,6 +303,7 @@ def get_model(width=128, height=128, depth=32):
 # Build model.
 model = get_model(width=w_width, height=h_height, depth=d_depth)
 model.summary()
+STR_REPORT += f"\n {model.summary()}"
 
 # Compile model.
 epochs = 50  # 100
@@ -319,6 +321,9 @@ model.compile(
     metrics=["acc"],
 )
 
+
+print("compiled model--1")
+
 # Define callbacks.
 checkpoint_cb = keras.callbacks.ModelCheckpoint(
     "3d_image_classification_simple_" + mri_type + "_" + str(fold_num) + ".h5", save_best_only=True
@@ -326,6 +331,8 @@ checkpoint_cb = keras.callbacks.ModelCheckpoint(
 early_stopping_cb = keras.callbacks.EarlyStopping(monitor="val_acc", patience=50)
 
 # Train the model, doing validation at the end of each epoch
+print("start training--1")
+
 model.fit(
     train_dataset,
     validation_data=validation_dataset,
@@ -574,6 +581,7 @@ model.compile(
     optimizer=keras.optimizers.Adam(learning_rate=lr_schedule),
     metrics=["acc"],
 )
+print("compiled model--2")
 
 # Define callbacks.
 checkpoint_cb = keras.callbacks.ModelCheckpoint(
@@ -581,6 +589,7 @@ checkpoint_cb = keras.callbacks.ModelCheckpoint(
 )
 early_stopping_cb = keras.callbacks.EarlyStopping(monitor="val_acc", patience=50)
 
+print("start training--2")
 # Train the model, doing validation at the end of each epoch
 model.fit(
     train_dataset,
