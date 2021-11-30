@@ -34,7 +34,7 @@ if tf.test.gpu_device_name():
     print('Default GPU Device: {}'.format(tf.test.gpu_device_name()))
     DEVICE = "gpu"
 else:
-    print("Please install GPU version of TF")
+    STR_REPORT += f"\n Please install GPU version of TF"
 print(tf.executing_eagerly())
 print()
 
@@ -46,14 +46,15 @@ fold_num = 1
 mri_type = "FLAIR"
 data_folder = "project_folder_" + mri_type + "/" + "cross_val_folds/" + "fold_" + str(fold_num) + "/"
 # data_folder = os.getcwd() + '/data/project_folder_FLAIR/cross_val_folds/fold_1/'
-STR_REPORT += f"\n Data folder: {data_folder}"
+STR_REPORT += f"\n \n Data folder: {data_folder}"
 
 train_img_len = len(os.listdir(data_folder + "train/" + "0/")) + len(os.listdir(data_folder + "train/" + "1/"))
 val_img_len = len(os.listdir(data_folder + "val/" + "0/")) + len(os.listdir(data_folder + "val/" + "1/"))
 
 print()
-print("Train image length: ", train_img_len)
-print("Validation image length: ", val_img_len)
+
+STR_REPORT += f"\n \n Train image length: {train_img_len}"
+STR_REPORT += f"\n \n Validation image length: {val_img_len}"
 
 # Training parameters (for current simple model provided by the Jupyter notebook)
 batch_size = 2
@@ -128,8 +129,10 @@ for rating in ratings:
     for f in files:
         y_test.append(float(rating))
         paths_test.append(p + f)
-print("Paths test: ", paths_test)
-print(len(paths_test), len(y_test))
+
+STR_REPORT += f"\n \n Paths test: {paths_test}"
+STR_REPORT += f"\n {len(paths_test)}{len(y_test)}"
+
 print()
 patient_scans_test = np.array([process_scan(path) for path in paths_test])
 
@@ -141,7 +144,7 @@ for rating in ratings:
     for f in files:
         y_train.append(float(rating))
         paths_train.append(p + f)
-print("Paths train:", paths_train)
+STR_REPORT += f"\n Paths train: {paths_train}"
 print(len(paths_train), len(y_train))
 print()
 patient_scans_train = np.array([process_scan(path) for path in paths_train])
@@ -155,7 +158,7 @@ for rating in ratings:
         # maybe have try-except here to deal with missing .nii files????
         y_val.append(float(rating))
         paths_val.append(p + f)
-print("Paths val:", paths_val)
+STR_REPORT += f"\n Paths val: {paths_val}" 
 print(len(paths_val), len(y_val))
 print()
 patient_scans_val = np.array([process_scan(path) for path in paths_val])
@@ -165,14 +168,14 @@ y_train = np.array(y_train)
 x_val = patient_scans_val
 y_val = np.array(y_val)
 
-print("------------------------------------------------")
-print("Paths train:", paths_train)
-print("Length x_train: ", len(x_train))
-print("y_train: ", y_train)
-print("Paths val:", paths_val)
-print("Length x_val: ", len(x_val))
-print("y_val: ", y_val)
-print("------------------------------------------------")
+STR_REPORT += f"\n ------------------------------------------------"
+STR_REPORT += f"\n Paths train: paths_train", 
+STR_REPORT += f"\n Length x_train: {len(x_train)}"
+STR_REPORT += f"\n y_train: {y_train}"
+STR_REPORT += f"\n Paths val: {paths_val}"
+STR_REPORT += f"\n Length x_val: {len(x_val)}"
+STR_REPORT += f"\n y_val: {y_val}"
+STR_REPORT += f"\n ------------------------------------------------"
 
 
 # a = read_nifti_file('/content/data/project_folder_FLAIR/cross_val_folds/test/0/00122.nii')
@@ -234,7 +237,7 @@ data = train_dataset.take(1)
 images, labels = list(data)[0]
 images = images.numpy()
 image = images[0]
-print("Dimension of the MRI scan is:", image.shape)
+STR_REPORT += f"\n Dimension of the MRI scan is: {image.shape}"
 plt.imshow(np.squeeze(image[:, :, 20]), cmap="gray")
 
 
@@ -335,11 +338,12 @@ model.fit(
 )
 
 print()
-print("DONE")
+STR_REPORT += f"\n DONE"
 print()
 
-print("-------------------------")
-print("NEXT MODEL")
+STR_REPORT += f"\n -------------------------"
+STR_REPORT += f"\n NEXT MODEL"
+STR_REPORT += f"\n -------------------------"
 
 
 # Helpers functions
@@ -590,9 +594,9 @@ model.fit(
 )
 
 print()
-print("DONE ResNet")
+STR_REPORT += f"\n DONE ResNet"
 
 str_ts = datetime.datetime.now().strftime(constants.ts_fmt)
-report_file = os.path.join(constants.DIR_OUTPUTS, f"report_{str_ts}.txt")
+report_file = os.path.join(constants.DIR_OUTPUTS, f"\n report_{str_ts}.txt")
 with open(report_file, "w") as fh:
     fh.write(STR_REPORT)
