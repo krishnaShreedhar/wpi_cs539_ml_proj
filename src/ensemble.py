@@ -29,6 +29,7 @@ def get_varied_features(list_models, data):
     for model in list_models:
         temp_features = model.predict(data)
         features.append(temp_features)
+        print(temp_features)
     return features
 
 
@@ -48,8 +49,7 @@ def get_varied_features(list_models, data):
 
 
 def _load_model(model_path, **kwargs):
-    # TODO: Add load model code
-    model = keras.models.load_model("my_h5_model.h5")
+    model = keras.models.load_model(model_path, compile=False)
     print(model.summary())
     return model
 
@@ -83,7 +83,7 @@ def train_ensembled_models(args):
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("r")
+    # parser.add_argument("r")
 
     args = parser.parse_args()
     return args

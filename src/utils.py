@@ -25,7 +25,7 @@ def normalize(volume):
 def resize_volume(img):
     """Resize across z-axis"""
     # Set the desired depth
-    desired_depth = 32
+    desired_depth = 64
     desired_width = 128
     desired_height = 128
     # Get current depth
