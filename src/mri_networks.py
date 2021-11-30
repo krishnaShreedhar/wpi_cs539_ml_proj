@@ -44,7 +44,7 @@ print(device_lib.list_local_devices())
 fold = 1
 fold_num = 1
 mri_type = "FLAIR"
-data_folder = "project_folder_" + mri_type + "/" + "cross_val_folds/" + "fold_" + str(fold_num) + "/"
+data_folder = "../../../project_folder_" + mri_type + "/" + "cross_val_folds/" + "fold_" + str(fold_num) + "/"
 # data_folder = os.getcwd() + '/data/project_folder_FLAIR/cross_val_folds/fold_1/'
 STR_REPORT += f"\n \n Data folder: {data_folder}"
 
