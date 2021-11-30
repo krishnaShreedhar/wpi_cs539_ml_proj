@@ -10,6 +10,7 @@ Original file is located at
 """
 
 # Importing dataset
+import datetime
 import os
 import numpy as np
 import pandas as pd
@@ -23,24 +24,29 @@ import nibabel as nib
 from scipy import ndimage
 import random
 import math
-
 from tensorflow.python.client import device_lib
 
+import constants
+
+STR_REPORT = ""
 DEVICE = "cpu"
 if tf.test.gpu_device_name():
     print('Default GPU Device: {}'.format(tf.test.gpu_device_name()))
     DEVICE = "gpu"
 else:
     print("Please install GPU version of TF")
-
 print(tf.executing_eagerly())
 print()
 
 print(device_lib.list_local_devices())
 
 # !unzip '/content/drive/MyDrive/Colab_Notebooks/Data/FLAIR.zip'
-
-data_folder = os.getcwd() + '/data/project_folder_FLAIR/cross_val_folds/fold_1/'
+fold = 1
+fold_num = 1
+mri_type = "FLAIR"
+data_folder = "project_folder_" + mri_type + "/" + "cross_val_folds/" + "fold_" + str(fold_num) + "/"
+# data_folder = os.getcwd() + '/data/project_folder_FLAIR/cross_val_folds/fold_1/'
+STR_REPORT += f"\n Data folder: {data_folder}"
 
 train_img_len = len(os.listdir(data_folder + "train/" + "0/")) + len(os.listdir(data_folder + "train/" + "1/"))
 val_img_len = len(os.listdir(data_folder + "val/" + "0/")) + len(os.listdir(data_folder + "val/" + "1/"))
@@ -113,7 +119,7 @@ def process_scan(path):
 
 # Processing .nii images for train/val/test sets
 ratings = [0, 1]
-project_folder = os.getcwd() + '/data/project_folder_FLAIR/'
+project_folder = "project_folder_" + mri_type + "/"  # os.getcwd() + '/data/project_folder_FLAIR/'
 paths_test = []
 y_test = []
 for rating in ratings:
@@ -130,7 +136,7 @@ patient_scans_test = np.array([process_scan(path) for path in paths_test])
 paths_train = []
 y_train = []
 for rating in ratings:
-    p = project_folder + 'cross_val_folds/fold_1/train/' + str(rating) + "/"
+    p = project_folder + 'cross_val_folds/fold_' + str(fold_num) + "/train/" + str(rating) + "/"
     files = os.listdir(p)
     for f in files:
         y_train.append(float(rating))
@@ -143,7 +149,7 @@ patient_scans_train = np.array([process_scan(path) for path in paths_train])
 paths_val = []
 y_val = []
 for rating in ratings:
-    p = project_folder + 'cross_val_folds/fold_1/val/' + str(rating) + "/"
+    p = project_folder + 'cross_val_folds/fold_' + str(fold_num) + '/val/' + str(rating) + "/"
     files = os.listdir(p)
     for f in files:
         # maybe have try-except here to deal with missing .nii files????
@@ -168,27 +174,28 @@ print("Length x_val: ", len(x_val))
 print("y_val: ", y_val)
 print("------------------------------------------------")
 
-a = read_nifti_file('/content/data/project_folder_FLAIR/cross_val_folds/test/0/00122.nii')
+
+# a = read_nifti_file('/content/data/project_folder_FLAIR/cross_val_folds/test/0/00122.nii')
 # a.shape
 
+# @tf.function
+def rotate(volume):
+    """Rotate the volume by a few degrees"""
 
-# # @tf.function
-# def rotate(volume):
-#     """Rotate the volume by a few degrees"""
-#
-#     def scipy_rotate(volume):
-#         # define some rotation angles
-#         angles = [-20, -10, -5, 5, 10, 20]
-#         # pick angles at random
-#         angle = random.choice(angles)
-#         # rotate volume
-#         volume = ndimage.rotate(volume, angle, reshape=False)
-#         volume[volume < 0] = 0
-#         volume[volume > 1] = 1
-#         return volume
-#
-#     augmented_volume = tf.numpy_function(scipy_rotate, [volume], tf.float32)
-#     return augmented_volume
+    def scipy_rotate(volume):
+        # define some rotation angles
+        angles = [-20, -10, -5, 5, 10, 20]
+        # pick angles at random
+        angle = random.choice(angles)
+        # rotate volume
+        volume = ndimage.rotate(volume, angle, reshape=False)
+        volume[volume < 0] = 0
+        volume[volume > 1] = 1
+        return volume
+
+    augmented_volume = tf.numpy_function(scipy_rotate, [volume], tf.float32)
+    return augmented_volume
+
 
 def train_preprocessing(volume, label):
     """Process training data by rotating and adding a channel."""
@@ -278,6 +285,8 @@ def get_model(width=128, height=128, depth=32):
 
     x = layers.GlobalAveragePooling3D()(x)
     x = layers.Dense(units=512, activation="relu")(x)  # units=64
+    x = layers.Dense(units=128, activation="relu")(x)
+    x = layers.Dense(units=64, activation="relu")(x)
     x = layers.Dropout(0.3)(x)
 
     outputs = layers.Dense(units=1, activation="sigmoid")(x)
@@ -292,7 +301,7 @@ model = get_model(width=w_width, height=h_height, depth=d_depth)
 model.summary()
 
 # Compile model.
-epochs = 100
+epochs = 50  # 100
 initial_lr = 0.01  # 0.0001 # initial learning rate
 decay_steps = 100000  # # decay steps in the exponential learning rate scheduler
 decay_rate = 0.96  # decay rate for the exponential learning rate scheduler
@@ -303,13 +312,13 @@ lr_schedule = keras.optimizers.schedules.ExponentialDecay(
 )
 model.compile(
     loss="binary_crossentropy",
-    optimizer=keras.optimizers.Adam(learning_rate=initial_lr),
+    optimizer=keras.optimizers.Adam(learning_rate=lr_schedule),
     metrics=["acc"],
 )
 
 # Define callbacks.
 checkpoint_cb = keras.callbacks.ModelCheckpoint(
-    "3d_image_classification_big.h5", save_best_only=True
+    "3d_image_classification_simple_" + mri_type + "_" + str(fold_num) + ".h5", save_best_only=True
 )
 early_stopping_cb = keras.callbacks.EarlyStopping(monitor="val_acc", patience=50)
 
@@ -327,6 +336,10 @@ model.fit(
 
 print()
 print("DONE")
+print()
+
+print("-------------------------")
+print("NEXT MODEL")
 
 
 # Helpers functions
@@ -500,6 +513,9 @@ def ResNet(model_params, input_shape=None, input_tensor=None, include_top=True,
     # resnet top
     if include_top:
         x = layers.GlobalAveragePooling3D(name='pool1')(x)
+        x = layers.Dense(units=512, activation="relu")(x)
+        x = layers.Dense(units=128, activation="relu")(x)
+        x = layers.Dense(units=64, activation="relu")(x)
         x = layers.Dense(units=1, activation="sigmoid", name='fc1')(x)
 
     # Ensure that the model takes into account any potential predecessors of `input_tensor`.
@@ -514,6 +530,7 @@ def ResNet(model_params, input_shape=None, input_tensor=None, include_top=True,
     return model
 
 
+# Set ResNet model parameters
 MODELS_PARAMS = ['resnet50', (3, 4, 6, 3), residual_bottleneck_block]
 w_width = 128
 h_height = w_width
@@ -539,7 +556,7 @@ model = ResNet50(input_shape, classes=2)
 model.summary()
 
 # Compile model.
-epochs = 100
+epochs = 50  # 100
 initial_lr = 0.001  # 0.0001 # initial learning rate
 decay_steps = 100000  # # decay steps in the exponential learning rate scheduler
 decay_rate = 0.96  # decay rate for the exponential learning rate scheduler
@@ -550,13 +567,13 @@ lr_schedule = keras.optimizers.schedules.ExponentialDecay(
 )
 model.compile(
     loss="binary_crossentropy",
-    optimizer=keras.optimizers.Adam(learning_rate=initial_lr),
+    optimizer=keras.optimizers.Adam(learning_rate=lr_schedule),
     metrics=["acc"],
 )
 
 # Define callbacks.
 checkpoint_cb = keras.callbacks.ModelCheckpoint(
-    "3d_image_classification_big.h5", save_best_only=True
+    "3d_image_classification_resnet50_" + mri_type + "_" + str(fold_num) + ".h5", save_best_only=True
 )
 early_stopping_cb = keras.callbacks.EarlyStopping(monitor="val_acc", patience=50)
 
@@ -573,4 +590,9 @@ model.fit(
 )
 
 print()
-print("DONE")
+print("DONE ResNet")
+
+str_ts = datetime.datetime.now().strftime(constants.ts_fmt)
+report_file = os.path.join(constants.DIR_OUTPUTS, f"report_{str_ts}.txt")
+with open(report_file, "w") as fh:
+    fh.write(STR_REPORT)
