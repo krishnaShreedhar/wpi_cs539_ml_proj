@@ -30,7 +30,7 @@ def pretty_dict(dict_x):
     """
     str_line = ''.join(['-']*100)
     str_dict = f"{str_line}"
-    for key, val in dict_x:
+    for key, val in dict_x.items():
         str_dict += f"\n{key}: {val} ({type(val)})"
     str_dict += f"\n{str_line}"
     return str_dict
