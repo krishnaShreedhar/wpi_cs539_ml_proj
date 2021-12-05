@@ -611,7 +611,7 @@ def train(dict_args):
     max_data = dict_args["max_data"]
     batch_size = dict_args["batch_size"]
 
-    print(f"Training args: {utils.pretty_dict(dict_args)}")
+    print(f"Training args: \n{utils.pretty_dict(dict_args)}")
 
     if tf.test.gpu_device_name():
         print('Default GPU Device: {}'.format(tf.test.gpu_device_name()))
