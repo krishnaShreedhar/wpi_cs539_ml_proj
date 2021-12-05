@@ -32,7 +32,7 @@ import utils
 # Needed to catch RuntimeWarning
 np.seterr(all='raise')
 
-# import constants
+import constants
 
 print(f"Import done")
 STR_REPORT = ""
@@ -496,6 +496,7 @@ def train_resnet(mri_type, fold_num, train_dataset, validation_dataset,
     # Build model.
     model = ResNet50(input_shape, classes=classes)
     model.summary()
+    str_report += f"\n {model.summary()}"
 
     # Compile model.
     # decay rate for the exponential learning rate scheduler
@@ -675,7 +676,7 @@ def train(dict_args):
         for f in files:
             y_train.append(float(rating))
             paths_train.append(p + f)
-    STR_REPORT += f"\n Paths train: {paths_train}"
+    # STR_REPORT += f"\n Paths train: {paths_train}"
     print(len(paths_train), len(y_train))
     print()
     # patient_scans_train = np.array([process_scan(path) for path in paths_train])
@@ -704,7 +705,7 @@ def train(dict_args):
             # maybe have try-except here to deal with missing .nii files????
             y_val.append(float(rating))
             paths_val.append(p + f)
-    STR_REPORT += f"\n Paths val: {paths_val}"
+    # STR_REPORT += f"\n Paths val: {paths_val}"
     print(len(paths_val), len(y_val))
     print()
     # patient_scans_val = np.array([process_scan(path) for path in paths_val])
@@ -787,10 +788,10 @@ def train(dict_args):
                                    d_depth=d_depth,
                                    classes=classes
                                    )
-    # str_ts = datetime.datetime.now().strftime(constants.ts_fmt)
-    # report_file = os.path.join(constants.DIR_OUTPUTS, f"\n report_{str_ts}.txt")
-    # with open(report_file, "w") as fh:
-    #    fh.write(STR_REPORT)
+    str_ts = datetime.datetime.now().strftime(constants.ts_fmt)
+    report_file = os.path.join(constants.DIR_OUTPUTS, f"\n report_{str_ts}.txt")
+    with open(report_file, "w") as fh:
+        fh.write(STR_REPORT)
     print(STR_REPORT)
 
 
