@@ -32,15 +32,13 @@ print(tf.executing_eagerly())
 print()
 
 from tensorflow.python.client import device_lib
-
 print(device_lib.list_local_devices())
 
 # !unzip '/content/drive/MyDrive/Colab_Notebooks/Data/FLAIR.zip'
 fold = 1
-fold_num = 1
 mri_type = "FLAIR"
 data_folder = "project_folder_" + mri_type + "/" + "cross_val_folds/" + "fold_" + str(fold_num) + "/"
-# data_folder = os.getcwd() + '/data/project_folder_FLAIR/cross_val_folds/fold_1/'
+#data_folder = os.getcwd() + '/data/project_folder_FLAIR/cross_val_folds/fold_1/'
 
 train_img_len = len(os.listdir(data_folder + "train/" + "0/")) + len(os.listdir(data_folder + "train/" + "1/"))
 val_img_len = len(os.listdir(data_folder + "val/" + "0/")) + len(os.listdir(data_folder + "val/" + "1/"))
@@ -51,12 +49,11 @@ print("Validation image length: ", val_img_len)
 
 # Training parameters (for current simple model provided by the Jupyter notebook)
 batch_size = 2
-steps_per_epoch = int(math.ceil(train_img_len / batch_size))
-validation_steps = int(math.ceil(val_img_len / batch_size))
+steps_per_epoch = int(math.ceil(train_img_len/batch_size))
+validation_steps = int(math.ceil(val_img_len/batch_size))
 w_width = 128
 h_height = w_width
 d_depth = 32
-
 
 def read_nifti_file(filepath):
     """Read and load volume"""
@@ -66,7 +63,6 @@ def read_nifti_file(filepath):
     scan = scan.get_fdata()
     return scan
 
-
 def normalize(volume):
     """Normalize the volume"""
     min = np.min(volume)
@@ -74,7 +70,6 @@ def normalize(volume):
     volume = (volume) / (max)
     volume = volume.astype("float32")
     return volume
-
 
 def resize_volume(img):
     """Resize across z-axis"""
@@ -99,7 +94,6 @@ def resize_volume(img):
     img = ndimage.zoom(img, (width_factor, height_factor, depth_factor), order=1)
     return img
 
-
 def process_scan(path):
     """Read and resize volume"""
     # Read scan
@@ -110,18 +104,17 @@ def process_scan(path):
     volume = resize_volume(volume)
     return volume
 
-
 # Processing .nii images for train/val/test sets
 ratings = [0, 1]
-project_folder = "project_folder_" + mri_type + "/"  # os.getcwd() + '/data/project_folder_FLAIR/'
+project_folder = "project_folder_" + mri_type + "/" #os.getcwd() + '/data/project_folder_FLAIR/'
 paths_test = []
 y_test = []
 for rating in ratings:
     p = project_folder + 'cross_val_folds/test/' + str(rating) + "/"
     files = os.listdir(p)
     for f in files:
-        y_test.append(float(rating))
-        paths_test.append(p + f)
+      y_test.append(float(rating))
+      paths_test.append(p+f)
 print("Paths test: ", paths_test)
 print(len(paths_test), len(y_test))
 print()
@@ -134,7 +127,7 @@ for rating in ratings:
     files = os.listdir(p)
     for f in files:
         y_train.append(float(rating))
-        paths_train.append(p + f)
+        paths_train.append(p+f)
 print("Paths train:", paths_train)
 print(len(paths_train), len(y_train))
 print()
@@ -148,7 +141,7 @@ for rating in ratings:
     for f in files:
         # maybe have try-except here to deal with missing .nii files????
         y_val.append(float(rating))
-        paths_val.append(p + f)
+        paths_val.append(p+f)
 print("Paths val:", paths_val)
 print(len(paths_val), len(y_val))
 print()
@@ -168,14 +161,12 @@ print("Length x_val: ", len(x_val))
 print("y_val: ", y_val)
 print("------------------------------------------------")
 
-
-# a = read_nifti_file('/content/data/project_folder_FLAIR/cross_val_folds/test/0/00122.nii')
-# a.shape
+#a = read_nifti_file('/content/data/project_folder_FLAIR/cross_val_folds/test/0/00122.nii')
+#a.shape
 
 # @tf.function
 def rotate(volume):
     """Rotate the volume by a few degrees"""
-
     def scipy_rotate(volume):
         # define some rotation angles
         angles = [-20, -10, -5, 5, 10, 20]
@@ -186,10 +177,8 @@ def rotate(volume):
         volume[volume < 0] = 0
         volume[volume > 1] = 1
         return volume
-
     augmented_volume = tf.numpy_function(scipy_rotate, [volume], tf.float32)
     return augmented_volume
-
 
 def train_preprocessing(volume, label):
     """Process training data by rotating and adding a channel."""
@@ -198,12 +187,10 @@ def train_preprocessing(volume, label):
     volume = tf.expand_dims(volume, axis=3)
     return volume, label
 
-
 def validation_preprocessing(volume, label):
     """Process validation data by only adding a channel."""
     volume = tf.expand_dims(volume, axis=3)
     return volume, label
-
 
 # Define data loaders.
 train_loader = tf.data.Dataset.from_tensor_slices((x_train, y_train))
@@ -212,16 +199,16 @@ validation_loader = tf.data.Dataset.from_tensor_slices((x_val, y_val))
 # Augment them on the fly during training.
 train_dataset = (
     train_loader.shuffle(len(x_train))
-        .map(train_preprocessing)
-        .batch(batch_size)
-        .prefetch(2)
+    .map(train_preprocessing)
+    .batch(batch_size)
+    .prefetch(2)
 )
 # Only rescale.
 validation_dataset = (
     validation_loader.shuffle(len(x_val))
-        .map(validation_preprocessing)
-        .batch(batch_size)
-        .prefetch(2)
+    .map(validation_preprocessing)
+    .batch(batch_size)
+    .prefetch(2)
 )
 
 data = train_dataset.take(1)
@@ -230,7 +217,6 @@ images = images.numpy()
 image = images[0]
 print("Dimension of the MRI scan is:", image.shape)
 plt.imshow(np.squeeze(image[:, :, 20]), cmap="gray")
-
 
 def plot_slices(num_rows, num_columns, width, height, data):
     """Plot a montage of 20 CT slices"""
@@ -255,7 +241,6 @@ def plot_slices(num_rows, num_columns, width, height, data):
     plt.subplots_adjust(wspace=0, hspace=0, left=0, right=1, bottom=0, top=1)
     plt.show()
 
-
 # Visualize montage of slices.
 # 4 rows and 10 columns for 100 slices of the CT scan.
 # plot_slices(4, 5, 128, 128, image[:, :, :40])
@@ -265,20 +250,20 @@ def get_model(width=128, height=128, depth=32):
 
     inputs = keras.Input((width, height, depth, 1))
 
-    x = layers.Conv3D(filters=64, kernel_size=3, activation="relu")(inputs)  # 32 filters
+    x = layers.Conv3D(filters=64, kernel_size=3, activation="relu")(inputs) # 32 filters
     x = layers.MaxPool3D(pool_size=2)(x)
     x = layers.BatchNormalization()(x)
 
-    x = layers.Conv3D(filters=128, kernel_size=3, activation="relu")(x)  # 32 filters
+    x = layers.Conv3D(filters=128, kernel_size=3, activation="relu")(x) # 32 filters
     x = layers.MaxPool3D(pool_size=2)(x)
     x = layers.BatchNormalization()(x)
 
-    x = layers.Conv3D(filters=256, kernel_size=3, activation="relu")(x)  # 64 filters
+    x = layers.Conv3D(filters=256, kernel_size=3, activation="relu")(x) # 64 filters
     x = layers.MaxPool3D(pool_size=2)(x)
     x = layers.BatchNormalization()(x)
 
     x = layers.GlobalAveragePooling3D()(x)
-    x = layers.Dense(units=512, activation="relu")(x)  # units=64
+    x = layers.Dense(units=512, activation="relu")(x) #units=64
     x = layers.Dense(units=128, activation="relu")(x)
     x = layers.Dense(units=64, activation="relu")(x)
     x = layers.Dropout(0.3)(x)
@@ -289,24 +274,23 @@ def get_model(width=128, height=128, depth=32):
     model = keras.Model(inputs, outputs, name="3dcnn")
     return model
 
-
 # Build model.
 model = get_model(width=w_width, height=h_height, depth=d_depth)
 model.summary()
 
 # Compile model.
-epochs = 50  # 100
-initial_lr = 0.01  # 0.0001 # initial learning rate
-decay_steps = 100000  # # decay steps in the exponential learning rate scheduler
-decay_rate = 0.96  # decay rate for the exponential learning rate scheduler
+epochs = 50 #100
+initial_lr = 0.01 #0.0001 # initial learning rate
+decay_steps = 100000 # # decay steps in the exponential learning rate scheduler
+decay_rate = 0.96 # decay rate for the exponential learning rate scheduler
 
 initial_learning_rate = initial_lr
 lr_schedule = keras.optimizers.schedules.ExponentialDecay(
-    initial_learning_rate, decay_steps=decay_steps, decay_rate=decay_rate, staircase=True
+   initial_learning_rate, decay_steps=decay_steps, decay_rate=decay_rate, staircase=True
 )
 model.compile(
     loss="binary_crossentropy",
-    optimizer=keras.optimizers.Adam(learning_rate=lr_schedule),
+    optimizer= keras.optimizers.Adam(learning_rate=lr_schedule),
     metrics=["acc"],
 )
 
@@ -334,6 +318,7 @@ print()
 
 print("-------------------------")
 print("NEXT MODEL")
+
 
 
 # Helpers functions
@@ -368,7 +353,6 @@ def get_bn_params(**params):
     default_bn_params.update(params)
     return default_bn_params
 
-
 # Residual blocks
 def residual_bottleneck_block(filters, stage, block, strides=None, cut='pre'):
     """The identity block is the block that has no conv layer at shortcut.
@@ -383,7 +367,7 @@ def residual_bottleneck_block(filters, stage, block, strides=None, cut='pre'):
     # Returns
         Output tensor for the block.
     """
-
+  
     def layer(input_tensor):
 
         # get params and names of layers
@@ -420,7 +404,6 @@ def residual_bottleneck_block(filters, stage, block, strides=None, cut='pre'):
         return x
 
     return layer
-
 
 # Residual Model Builder
 def ResNet(model_params, input_shape=None, input_tensor=None, include_top=True,
@@ -511,7 +494,7 @@ def ResNet(model_params, input_shape=None, input_tensor=None, include_top=True,
         x = layers.Dense(units=128, activation="relu")(x)
         x = layers.Dense(units=64, activation="relu")(x)
         x = layers.Dense(units=1, activation="sigmoid", name='fc1')(x)
-
+        
     # Ensure that the model takes into account any potential predecessors of `input_tensor`.
     if input_tensor is not None:
         inputs = keras_utils.get_source_inputs(input_tensor)
@@ -523,7 +506,6 @@ def ResNet(model_params, input_shape=None, input_tensor=None, include_top=True,
 
     return model
 
-
 # Set ResNet model parameters
 MODELS_PARAMS = ['resnet50', (3, 4, 6, 3), residual_bottleneck_block]
 w_width = 128
@@ -531,7 +513,6 @@ h_height = w_width
 d_depth = 32
 classes = 2
 input_shape = (w_width, h_height, d_depth, 1)
-
 
 def ResNet50(input_shape=None, input_tensor=None, weights=None, classes=1000, include_top=True, **kwargs):
     return ResNet(
@@ -544,30 +525,29 @@ def ResNet50(input_shape=None, input_tensor=None, weights=None, classes=1000, in
         **kwargs
     )
 
-
 # Build model.
 model = ResNet50(input_shape, classes=2)
 model.summary()
 
 # Compile model.
-epochs = 50  # 100
-initial_lr = 0.001  # 0.0001 # initial learning rate
-decay_steps = 100000  # # decay steps in the exponential learning rate scheduler
-decay_rate = 0.96  # decay rate for the exponential learning rate scheduler
+epochs = 50 #100
+initial_lr = 0.001 #0.0001 # initial learning rate
+decay_steps = 100000 # # decay steps in the exponential learning rate scheduler
+decay_rate = 0.96 # decay rate for the exponential learning rate scheduler
 
 initial_learning_rate = initial_lr
 lr_schedule = keras.optimizers.schedules.ExponentialDecay(
-    initial_learning_rate, decay_steps=decay_steps, decay_rate=decay_rate, staircase=True
+   initial_learning_rate, decay_steps=decay_steps, decay_rate=decay_rate, staircase=True
 )
 model.compile(
     loss="binary_crossentropy",
-    optimizer=keras.optimizers.Adam(learning_rate=lr_schedule),
+    optimizer= keras.optimizers.Adam(learning_rate=lr_schedule),
     metrics=["acc"],
 )
 
 # Define callbacks.
 checkpoint_cb = keras.callbacks.ModelCheckpoint(
-    "3d_image_classification_resnet50_" + mri_type + "_" + str(fold_num) + ".h5", save_best_only=True
+    "3d_image_classification_resnet50_"  + mri_type + "_" + str(fold_num) + ".h5", save_best_only=True
 )
 early_stopping_cb = keras.callbacks.EarlyStopping(monitor="val_acc", patience=50)
 

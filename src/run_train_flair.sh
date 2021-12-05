@@ -11,4 +11,4 @@ echo "Starting to run SBATCH SCRIPT"
 
 source /home/sskodate/py37_venv/bin/activate
 
-python src/mri_networks.py
+python3 mri_networks_raul_edits.py
