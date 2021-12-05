@@ -395,8 +395,6 @@ def ResNet50(input_shape=None, input_tensor=None, weights=None, classes=1000, in
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("r")
-
     parser.add_argument("--epochs",
                         type=int,
                         help="number of epochs",
@@ -427,15 +425,33 @@ def parse_args():
                         default=128)
     parser.add_argument("--d_depth",
                         type=int,
-                        help="w_width",
+                        help="d_depth",
                         default=32)
     parser.add_argument("--classes",
                         type=int,
-                        help="w_width",
+                        help="classes",
                         default=2)
+    parser.add_argument("--fold_num",
+                        type=int,
+                        help="fold_num",
+                        default=1)
+    parser.add_argument("--mri_type",
+                        type=str,
+                        help="mri_type",
+                        default="T1w")
+    parser.add_argument("--max_data",
+                        type=int,
+                        help="max_data",
+                        default=4)
+    parser.add_argument("--batch_size",
+                        type=int,
+                        help="batch_size",
+                        default=2)
+
     # parser.add_argument("-v", "--verbose", action="store_true",
     #                     help="increase output verbosity")
 
+    # batch_size = 2
     # epochs = 50,  # 2  # 100
     # initial_lr = 0.01,  # 0.0001 # initial learning rate
     # decay_steps = 100000,  # # decay steps in the exponential learning rate scheduler
@@ -445,9 +461,13 @@ def parse_args():
     # w_width = 128,
     # d_depth = 32
     # classes = 2
+    # fold_num = args["fold_num"]
+    # mri_type = args["mri_type"]
+    # max_data = args["max_data"]
 
     args = parser.parse_args()
-    return args
+    dict_args = vars(args)
+    return dict_args
 
 
 def train_resnet(mri_type, fold_num, train_dataset, validation_dataset,
@@ -580,8 +600,8 @@ def train(args):
     classes = args["classes"]
     fold_num = args["fold_num"]
     mri_type = args["mri_type"]
-    # fold_num = 1
-    # mri_type = "T1w"
+    max_data = args["max_data"]
+    batch_size = args["batch_size"]
 
     if tf.test.gpu_device_name():
         print('Default GPU Device: {}'.format(tf.test.gpu_device_name()))
@@ -607,7 +627,6 @@ def train(args):
     # STR_REPORT += f"\n \n Validation image length: {val_img_len}"
 
     # Training parameters (for current simple model provided by the Jupyter notebook)
-    batch_size = 2
     steps_per_epoch = int(math.ceil(train_img_len / batch_size))
     validation_steps = int(math.ceil(val_img_len / batch_size))
 
@@ -652,6 +671,7 @@ def train(args):
     print()
     # patient_scans_train = np.array([process_scan(path) for path in paths_train])
     patient_scans_train = []
+    paths_train = paths_train[:max_data]
     for i, path in enumerate(paths_train):
         try:
             processed_scan = process_scan(path)
@@ -676,6 +696,7 @@ def train(args):
     print()
     # patient_scans_val = np.array([process_scan(path) for path in paths_val])
     patient_scans_val = []
+    paths_val = paths_val[:max_data]
     for i, path in enumerate(paths_val):
         try:
             processed_scan = process_scan(path)
@@ -760,6 +781,11 @@ def train(args):
 
 
 def main():
+    """
+    python3 mri_nw_param.py --epochs=1 --initial_lr=0.01 --decay_steps=100000 --decay_rate=0.96 --patience=50 --verbose=2 --w_width=128 --d_depth=32 --classes=2 --fold_num=1 --mri_type=T1w --max_data=4 --batch_size=2
+
+    :return:
+    """
     args = parse_args()
     train(args)
 
