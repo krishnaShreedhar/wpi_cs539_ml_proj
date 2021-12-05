@@ -671,7 +671,11 @@ def train(args):
     print()
     # patient_scans_train = np.array([process_scan(path) for path in paths_train])
     patient_scans_train = []
+
+    # limit data considered
     paths_train = paths_train[:max_data]
+    y_train = y_train[:max_data]
+
     for i, path in enumerate(paths_train):
         try:
             processed_scan = process_scan(path)
@@ -696,7 +700,11 @@ def train(args):
     print()
     # patient_scans_val = np.array([process_scan(path) for path in paths_val])
     patient_scans_val = []
+
+    # limit data considered
     paths_val = paths_val[:max_data]
+    y_val = y_val[:max_data]
+
     for i, path in enumerate(paths_val):
         try:
             processed_scan = process_scan(path)
@@ -715,17 +723,14 @@ def train(args):
     del patient_scans_train, patient_scans_val
     np.seterr(all='warn')
 
-    # STR_REPORT += f"\n ------------------------------------------------"
-    # STR_REPORT += f"\n Paths train: paths_train",
-    # STR_REPORT += f"\n Length x_train: {len(x_train)}"
-    # STR_REPORT += f"\n y_train: {y_train}"
-    # STR_REPORT += f"\n Paths val: {paths_val}"
-    # STR_REPORT += f"\n Length x_val: {len(x_val)}"
-    # STR_REPORT += f"\n y_val: {y_val}"
-    # STR_REPORT += f"\n ------------------------------------------------"
-
-    # a = read_nifti_file('/content/data/project_folder_FLAIR/cross_val_folds/test/0/00122.nii')
-    # a.shape
+    STR_REPORT += f"\n ------------------------------------------------"
+    STR_REPORT += f"\n Paths train: {paths_train}",
+    STR_REPORT += f"\n Length x_train: {len(x_train)}"
+    STR_REPORT += f"\n y_train: {y_train}"
+    STR_REPORT += f"\n Paths val: {paths_val}"
+    STR_REPORT += f"\n Length x_val: {len(x_val)}"
+    STR_REPORT += f"\n y_val: {y_val}"
+    STR_REPORT += f"\n ------------------------------------------------"
 
     # Define data loaders.
     train_loader = tf.data.Dataset.from_tensor_slices((x_train, y_train))
