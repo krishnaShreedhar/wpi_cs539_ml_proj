@@ -793,7 +793,7 @@ def train(dict_args):
                                    classes=classes
                                    )
     str_ts = datetime.datetime.now().strftime(constants.ts_fmt)
-    report_file = os.path.join(constants.DIR_OUTPUTS, f"\n report_{str_ts}.txt")
+    report_file = os.path.join(constants.DIR_OUTPUTS, f"report_{str_ts}.txt")
     with open(report_file, "w") as fh:
         fh.write(STR_REPORT)
     print(STR_REPORT)
