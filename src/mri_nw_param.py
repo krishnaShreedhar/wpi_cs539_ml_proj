@@ -28,6 +28,7 @@ import math
 from tensorflow.python.client import device_lib
 
 import utils
+
 # Needed to catch RuntimeWarning
 np.seterr(all='raise')
 
@@ -396,6 +397,10 @@ def ResNet50(input_shape=None, input_tensor=None, weights=None, classes=1000, in
 
 def parse_args():
     parser = argparse.ArgumentParser()
+    parser.add_argument("--model_to_train",
+                        type=str,
+                        help="model_to_train: 3dcnn | resnet",
+                        default="3dcnn")
     parser.add_argument("--epochs",
                         type=int,
                         help="number of epochs",
@@ -438,7 +443,7 @@ def parse_args():
                         default=1)
     parser.add_argument("--mri_type",
                         type=str,
-                        help="mri_type",
+                        help="mri_type: T1w | T1wCE | T2w | FLAIR",
                         default="T1w")
     parser.add_argument("--max_data",
                         type=int,
@@ -590,6 +595,7 @@ def train_cnn(mri_type, fold_num, train_dataset, validation_dataset,
 
 
 def train(dict_args):
+    model_to_train = dict_args["model_to_train"]
     epochs = dict_args["epochs"]
     initial_lr = dict_args["initial_lr"]
     decay_steps = dict_args["decay_steps"]
@@ -727,7 +733,7 @@ def train(dict_args):
     np.seterr(all='warn')
 
     STR_REPORT += f"\n ------------------------------------------------"
-    STR_REPORT += f"\n Paths train: {paths_train}",
+    STR_REPORT += f"\n Paths train: {paths_train}"
     STR_REPORT += f"\n Length x_train: {len(x_train)}"
     STR_REPORT += f"\n y_train: {y_train}"
     STR_REPORT += f"\n Paths val: {paths_val}"
@@ -755,32 +761,32 @@ def train(dict_args):
             .prefetch(2)
     )
 
-    STR_REPORT += train_cnn(mri_type, fold_num, train_dataset, validation_dataset,
-                            epochs=epochs,
-                            initial_lr=initial_lr,
-                            decay_steps=decay_steps,
-                            decay_rate=decay_rate,
-                            patience=patience,
-                            verbose=verbose,
-                            w_width=w_width,
-                            d_depth=d_depth
-                            )
+    if model_to_train == "3dcnn":
 
-    STR_REPORT += f"\n -------------------------"
-    STR_REPORT += f"\n NEXT MODEL"
-    STR_REPORT += f"\n -------------------------"
+        STR_REPORT += train_cnn(mri_type, fold_num, train_dataset, validation_dataset,
+                                epochs=epochs,
+                                initial_lr=initial_lr,
+                                decay_steps=decay_steps,
+                                decay_rate=decay_rate,
+                                patience=patience,
+                                verbose=verbose,
+                                w_width=w_width,
+                                d_depth=d_depth
+                                )
 
-    STR_REPORT += train_resnet(mri_type, fold_num, train_dataset, validation_dataset,
-                               epochs=epochs,
-                               initial_lr=initial_lr,
-                               decay_steps=decay_steps,
-                               decay_rate=decay_rate,
-                               patience=patience,
-                               verbose=verbose,
-                               w_width=w_width,
-                               d_depth=d_depth,
-                               classes=classes
-                               )
+    elif model_to_train == "resnet":
+
+        STR_REPORT += train_resnet(mri_type, fold_num, train_dataset, validation_dataset,
+                                   epochs=epochs,
+                                   initial_lr=initial_lr,
+                                   decay_steps=decay_steps,
+                                   decay_rate=decay_rate,
+                                   patience=patience,
+                                   verbose=verbose,
+                                   w_width=w_width,
+                                   d_depth=d_depth,
+                                   classes=classes
+                                   )
     # str_ts = datetime.datetime.now().strftime(constants.ts_fmt)
     # report_file = os.path.join(constants.DIR_OUTPUTS, f"\n report_{str_ts}.txt")
     # with open(report_file, "w") as fh:
@@ -790,7 +796,7 @@ def train(dict_args):
 
 def main():
     """
-    python3 mri_nw_param.py --epochs=1 --initial_lr=0.01 --decay_steps=100000 --decay_rate=0.96 --patience=50 --verbose=2 --w_width=128 --d_depth=32 --classes=2 --fold_num=1 --mri_type=T1w --max_data=4 --batch_size=2
+    python3 mri_nw_param.py --model_to_train=3dcnn --epochs=1 --initial_lr=0.01 --decay_steps=100000 --decay_rate=0.96 --patience=50 --verbose=2 --w_width=128 --d_depth=32 --classes=2 --fold_num=1 --mri_type=T1w --max_data=4 --batch_size=2
 
     :return:
     """
