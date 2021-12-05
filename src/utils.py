@@ -22,6 +22,20 @@ def normalize(volume):
     return volume
 
 
+def pretty_dict(dict_x):
+    """
+
+    :param dict_x:
+    :return:
+    """
+    str_line = ''.join(['-']*100)
+    str_dict = f"{str_line}"
+    for key, val in dict_x:
+        str_dict += f"\n{key}: {val} ({type(val)})"
+    str_dict += f"\n{str_line}"
+    return str_dict
+
+
 def resize_volume(img):
     """Resize across z-axis"""
     # Set the desired depth

@@ -7,6 +7,9 @@
 #SBATCH --gres=gpu:1
 #SBATCH -p whitehill
 
+module load cuda11.1/toolkit/11.1.1
+module load cudnn/8.1.1.33-11.2/3k5bbs63
+
 echo "Starting to run SBATCH SCRIPT"
 
 source /home/sskodate/py37_venv/bin/activate

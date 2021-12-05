@@ -27,6 +27,7 @@ import random
 import math
 from tensorflow.python.client import device_lib
 
+import utils
 # Needed to catch RuntimeWarning
 np.seterr(all='raise')
 
@@ -588,20 +589,22 @@ def train_cnn(mri_type, fold_num, train_dataset, validation_dataset,
     return str_report
 
 
-def train(args):
-    epochs = args["epochs"]
-    initial_lr = args["initial_lr"]
-    decay_steps = args["decay_steps"]
-    decay_rate = args["decay_rate"]
-    patience = args["patience"]
-    verbose = args["verbose"]
-    w_width = args["w_width"]
-    d_depth = args["d_depth"]
-    classes = args["classes"]
-    fold_num = args["fold_num"]
-    mri_type = args["mri_type"]
-    max_data = args["max_data"]
-    batch_size = args["batch_size"]
+def train(dict_args):
+    epochs = dict_args["epochs"]
+    initial_lr = dict_args["initial_lr"]
+    decay_steps = dict_args["decay_steps"]
+    decay_rate = dict_args["decay_rate"]
+    patience = dict_args["patience"]
+    verbose = dict_args["verbose"]
+    w_width = dict_args["w_width"]
+    d_depth = dict_args["d_depth"]
+    classes = dict_args["classes"]
+    fold_num = dict_args["fold_num"]
+    mri_type = dict_args["mri_type"]
+    max_data = dict_args["max_data"]
+    batch_size = dict_args["batch_size"]
+
+    print(f"Training args: {utils.pretty_dict(dict_args)}")
 
     if tf.test.gpu_device_name():
         print('Default GPU Device: {}'.format(tf.test.gpu_device_name()))
