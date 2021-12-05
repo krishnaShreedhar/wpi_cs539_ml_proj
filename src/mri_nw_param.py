@@ -513,8 +513,10 @@ def train_resnet(mri_type, fold_num, train_dataset, validation_dataset,
     print("compiled model--2")
 
     # Define callbacks.
+    model_path = os.path.join(constants.DIR_MODELS,
+                              f"3d_img_cls_resnet50_{mri_type}_{fold_num}.h5")
     checkpoint_cb = keras.callbacks.ModelCheckpoint(
-        "3d_image_classification_resnet50_" + mri_type + "_" + str(fold_num) + ".h5", save_best_only=True
+        model_path, save_best_only=True
     )
     early_stopping_cb = keras.callbacks.EarlyStopping(monitor="val_acc", patience=patience)
 
@@ -572,8 +574,10 @@ def train_cnn(mri_type, fold_num, train_dataset, validation_dataset,
     print("compiled model--1")
 
     # Define callbacks.
+    model_path = os.path.join(constants.DIR_MODELS,
+                              f"3d_img_cls_cnn_{mri_type}_{fold_num}.h5")
     checkpoint_cb = keras.callbacks.ModelCheckpoint(
-        "3d_image_classification_simple_" + mri_type + "_" + str(fold_num) + ".h5", save_best_only=True
+        model_path, save_best_only=True
     )
     early_stopping_cb = keras.callbacks.EarlyStopping(monitor="val_acc", patience=patience)
 
