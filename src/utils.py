@@ -28,7 +28,7 @@ def pretty_dict(dict_x):
     :param dict_x:
     :return:
     """
-    str_line = ''.join(['-']*100)
+    str_line = ''.join(['-'] * 100)
     str_dict = f"{str_line}"
     for key, val in dict_x.items():
         str_dict += f"\n{key}: {val} ({type(val)})"
@@ -39,7 +39,7 @@ def pretty_dict(dict_x):
 def resize_volume(img):
     """Resize across z-axis"""
     # Set the desired depth
-    desired_depth = 64
+    desired_depth = 32  # 64
     desired_width = 128
     desired_height = 128
     # Get current depth

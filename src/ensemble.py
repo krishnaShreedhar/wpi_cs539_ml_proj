@@ -32,8 +32,7 @@ def get_varied_features(list_models, list_model_paths, list_scans):
 
     for d_index, dict_data in enumerate(list_scans):
         dict_tmp = {
-            "d_id": dict_data["data_id"],
-            "d_path": dict_data["path"],
+            "d_id": dict_data["d_id"],
             "label": dict_data["label"]
         }
         for m_index, model in enumerate(list_models):
