@@ -11,9 +11,10 @@ import constants
 
 
 def get_intermediate_output_1(model, data, layer_name='my_layer'):
+    input_data = np.expand_dims(data, axis=0)
     extractor = keras.Model(inputs=model.inputs,
                             outputs=[layer.output for layer in model.layers])
-    features = extractor(data)
+    features = extractor(input_data)
     return features
 
 
@@ -24,22 +25,24 @@ def get_intermediate_output_2(model, data, layer_name='my_layer'):
     return intermediate_output
 
 
-def get_varied_features(list_models, list_model_paths, data, list_data_paths):
+def get_varied_features(list_models, list_model_paths, list_scans):
     list_all_features = []
     layer_name = {"3dcnn": "dense_2", "resnet": "dense_2"}
     layer_name = {"3dcnn": "dense_3", "resnet": "fc1"}
 
-    for d_index, dict_data in enumerate(list_data_paths):
+    for d_index, dict_data in enumerate(list_scans):
         dict_tmp = {
-            "data_id": list_data_paths[d_index]["data_id"],
-            "label": list_data_paths[d_index]["label"]
+            "d_id": list_scans[d_index]["data_id"],
+            "d_path": list_scans[d_index]["path"],
+            "label": list_scans[d_index]["label"]
         }
-        for index, model in enumerate(list_models):
-            dense_3 = get_intermediate_output_1(model, data, layer_name="dense_3")
-            dense_2 = get_intermediate_output_1(model, data, layer_name="dense_2")
+        for m_index, model in enumerate(list_models):
+            npa_data = list_scans["d_id"]
+            dense_3 = get_intermediate_output_1(model, npa_data, layer_name="dense_3")
+            dense_2 = get_intermediate_output_1(model, npa_data, layer_name="dense_2")
             dict_tmp["dense_3"] = dense_3
             dict_tmp["dense_2"] = dense_2
-            dict_tmp["mri_type"] = list_model_paths[index]["mri_type"]
+            dict_tmp["mri_type"] = list_model_paths[m_index]["mri_type"]
 
         list_all_features.append(dict_tmp)
     return list_all_features
@@ -61,8 +64,10 @@ def get_varied_features(list_models, list_model_paths, data, list_data_paths):
 
 
 def _load_model(model_path, **kwargs):
+    list_str_summary = []
     model = keras.models.load_model(model_path)
-    print(model.summary())
+    model.summary(print_fn=lambda x: list_str_summary.append(f"{x}"))
+    print('\n'.join(list_str_summary))
     return model
 
 
@@ -75,20 +80,42 @@ def load_models(list_paths):
     return list_models
 
 
-def get_data(list_data):
-    patient_scans_test = np.array([utils.process_scan(path) for path in list_data])
-    return patient_scans_test
+def _get_scans(patient_id, label):
+    mri_types = constants.mri_types
+    dict_scans = dict()
+    for mri_type in mri_types:
+        path = f"../data/project_folder_correct_{mri_type}/" \
+               f"cross_val_folds/fold_3/train/{label}/{patient_id:5}.nii"
+        try:
+            dict_scans[mri_type] = utils.process_scan(path)
+        except:
+            print(f"Failed: Patient: {patient_id}, Scan: {mri_type}, Label: {label}")
+            dict_scans[mri_type] = None
+    return dict_scans
+
+
+def get_all_data(list_data_paths):
+    list_scans = []
+    for dict_data in list_data_paths:
+        dict_scans = {
+            "d_id": dict_data["d_id"],
+            "label": dict_data["label"],
+            "scans": _get_scans(dict_data["d_id"], dict_data["label"])
+        }
+
+        list_scans.append(dict_scans)
+    return list_scans
 
 
 def get_list_model_paths():
     list_model_paths = [
         {
-            "path": "models/3d_image_classification_simple_T1w_1.h5",
+            "path": "../models/3d_image_classification_simple_T1w_1.h5",
             "model_type": "3dcnn",
             "mri_type": "T1w"
         },
         {
-            "path": "models/3d_image_classification_simple_T2w_1.h5",
+            "path": "../models/3d_image_classification_simple_T2w_1.h5",
             "model_type": "3dcnn",
             "mri_type": "T2w"
         }
@@ -99,18 +126,15 @@ def get_list_model_paths():
 def get_list_data_paths():
     list_data_paths = [
         {
-            "data_id": "00001",
-            "path": "models/3d_image_classification_simple_T1w_1.h5",
+            "data_id": "00009",
+            "label": 0
+        },
+        {
+            "data_id": "00444",
             "label": 0
         },
         {
             "data_id": "00001",
-            "path": "models/3d_image_classification_simple_T1w_1.h5",
-            "label": 0
-        },
-        {
-            "data_id": "00001",
-            "path": "models/3d_image_classification_simple_T2w_1.h5",
             "label": 1
         }
     ]
@@ -122,8 +146,8 @@ def create_ensembled_features(args):
     list_data_paths = get_list_data_paths()
 
     list_models = load_models(list_model_paths)
-    data = get_data(list_data_paths)
-    list_records = get_varied_features(list_models, list_model_paths, data, list_data_paths)
+    list_scans = get_all_data(list_data_paths)
+    list_records = get_varied_features(list_models, list_model_paths, list_scans)
 
     df_ensemble = pd.DataFrame.from_records(list_records)
 
