@@ -171,6 +171,10 @@ def get_list_data_paths():
         },
         {
             "d_id": 1010,
+            "label": 0
+        },
+        {
+            "d_id": 1008,
             "label": 1
         }
     ]
@@ -189,7 +193,7 @@ def flatten_cols(df_data):
     return df_data
 
 
-def create_ensembled_features(args):
+def create_ensembled_features():  # send args if required
     list_model_paths = get_list_model_paths()
     list_data_paths = get_list_data_paths()
 

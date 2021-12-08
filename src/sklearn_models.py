@@ -17,6 +17,7 @@ import pandas as pd
 from prettytable import PrettyTable
 
 import constants
+import ensemble
 
 def get_classifiers():
     names = [
@@ -116,6 +117,9 @@ def split_data(df_data, test_size=0.35, random_state=42):
 def main():
     out_path = os.path.join(constants.DIR_OUTPUTS, f"df_ensemble.csv")
     print(f"Reading ensemble dataset from: {out_path}")
+
+    ensemble.create_ensembled_features()
+
     df_data = pd.read_csv(out_path)
     train_models(df_data)
 
