@@ -61,7 +61,7 @@ class MRIDataHandler:
         if list_mri_types is None:
             list_mri_types = self.mri_types
 
-        list_ids = list(self.df_data["d_id"].unique_values())
+        list_ids = list(set(self.df_data["d_id"]))
 
         list_records = []
         list_data_paths = []
@@ -86,3 +86,11 @@ class MRIDataHandler:
         print(f"Writing all dataset to: {out_path}")
         df_records.to_csv(out_path, index=False)
 
+
+def main():
+    dh = MRIDataHandler("../data/all_mri_types.csv")
+    dh.gen_data_list()
+
+
+if __name__ == '__main__':
+    main()
