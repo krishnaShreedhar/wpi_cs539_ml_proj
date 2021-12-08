@@ -77,10 +77,16 @@ def train_models(df_data):
         clf.fit(X_train, y_train)
         # score = clf.score(X_test, y_test)
         y_pred = clf.predict(X_test)
+        y_prob = []
+        try:
+            y_prob = clf.decision_function(X_train)
+        except:
+            print(f"{name}: no decision")
+        print(f"{name}: \n{y_test}\n{y_pred}\n{y_prob}")
         metrics = get_metrics(y_test, y_pred)
 
         try:
-            rocauc = round(roc_auc_score(y_test, y_pred), 2)
+            rocauc = round(roc_auc_score(y_test, clf.decision_function(X_train)), 2)
             print(rocauc)
         except:
             print(f"rocauc failed")
