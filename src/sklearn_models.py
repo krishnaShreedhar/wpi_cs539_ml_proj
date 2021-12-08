@@ -9,6 +9,14 @@ from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
 
+from sklearn.metrics import roc_auc_score, accuracy_score, precision_score, recall_score, f1_score
+from sklearn.metrics import confusion_matrix
+
+import os
+import pandas as pd
+from prettytable import PrettyTable
+
+import constants
 
 def get_classifiers():
     names = [
@@ -24,14 +32,27 @@ def get_classifiers():
         "QDA",
     ]
 
+    # classifiers = [
+    #     KNeighborsClassifier(3),
+    #     SVC(kernel="linear", C=0.025),
+    #     SVC(gamma=2, C=1),
+    #     GaussianProcessClassifier(1.0 * RBF(1.0)),
+    #     DecisionTreeClassifier(max_depth=5),
+    #     RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1),
+    #     MLPClassifier(alpha=1, max_iter=1000),
+    #     AdaBoostClassifier(),
+    #     GaussianNB(),
+    #     QuadraticDiscriminantAnalysis(),
+    # ]
+
     classifiers = [
-        KNeighborsClassifier(3),
-        SVC(kernel="linear", C=0.025),
-        SVC(gamma=2, C=1),
-        GaussianProcessClassifier(1.0 * RBF(1.0)),
-        DecisionTreeClassifier(max_depth=5),
+        KNeighborsClassifier(1),
+        # SVC(kernel="linear", C=0.025),
+        # SVC(gamma=2, C=1),
+        # GaussianProcessClassifier(1.0 * RBF(1.0)),
+        # DecisionTreeClassifier(max_depth=5),
         RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1),
-        MLPClassifier(alpha=1, max_iter=1000),
+        # MLPClassifier(alpha=1, max_iter=1000),
         AdaBoostClassifier(),
         GaussianNB(),
         QuadraticDiscriminantAnalysis(),
@@ -52,6 +73,31 @@ def train_models(df_data):
         # ax = plt.subplot(len(datasets), len(classifiers) + 1, i)
         clf.fit(X_train, y_train)
         score = clf.score(X_test, y_test)
+        y_pred = clf.predict(X_test)
+        metrics = get_metrics(y_test, y_pred)
+
+        print(f"name: {name}, score: {score}, metrics: {metrics}")
+
+
+def get_metrics(y_actual, y_pred):
+    """
+        tn, fp, fn, tp = confusion_matrix([0, 1, 0, 1], [1, 1, 1, 0]).ravel()
+        (tn, fp, fn, tp)
+        (0, 2, 1, 1)
+    :param y_actual:
+    :param y_pred:
+    :return:
+    """
+    tn, fp, fn, tp = confusion_matrix(y_actual, y_pred).ravel()
+    dict_metrics = {
+        'accuracy': round(accuracy_score(y_actual, y_pred), 2),
+        'precision': round(precision_score(y_actual, y_pred), 2),
+        'recall': round(recall_score(y_actual, y_pred), 2),
+        'f1': round(f1_score(y_actual, y_pred), 2),
+        'rocauc': round(roc_auc_score(y_actual, y_pred), 2),
+        'confusion_tuple': {"tp": tp, "fp": fp, "fn": fn, "tn": tn}
+    }
+    return dict_metrics
 
 
 def split_data(df_data, test_size=0.35, random_state=42):
@@ -65,3 +111,14 @@ def split_data(df_data, test_size=0.35, random_state=42):
     )
 
     return X_train, X_test, y_train, y_test
+
+
+def main():
+    out_path = os.path.join(constants.DIR_OUTPUTS, f"df_ensemble.csv")
+    print(f"Reading ensemble dataset from: {out_path}")
+    df_data = pd.read_csv(out_path)
+    train_models(df_data)
+
+
+if __name__ == '__main__':
+    main()

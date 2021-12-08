@@ -160,6 +160,18 @@ def get_list_data_paths():
         {
             "d_id": 2,
             "label": 1
+        },
+        {
+            "d_id": 799,
+            "label": 0
+        },
+        {
+            "d_id": 655,
+            "label": 1
+        },
+        {
+            "d_id": 1010,
+            "label": 1
         }
     ]
     return list_data_paths
