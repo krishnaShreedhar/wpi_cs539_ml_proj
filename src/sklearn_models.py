@@ -19,6 +19,7 @@ from prettytable import PrettyTable
 import constants
 import ensemble
 
+
 def get_classifiers():
     names = [
         "Nearest Neighbors",
@@ -55,8 +56,8 @@ def get_classifiers():
         RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1),
         # MLPClassifier(alpha=1, max_iter=1000),
         AdaBoostClassifier(),
-        GaussianNB(),
-        QuadraticDiscriminantAnalysis(),
+        # GaussianNB(),
+        # QuadraticDiscriminantAnalysis(),
     ]
 
     return classifiers, names
@@ -68,16 +69,32 @@ def train_models(df_data):
     classifiers, names = get_classifiers()
 
     X_train, X_test, y_train, y_test = split_data(df_data)
+    list_records = []
 
     # iterate over classifiers
     for name, clf in zip(names, classifiers):
         # ax = plt.subplot(len(datasets), len(classifiers) + 1, i)
         clf.fit(X_train, y_train)
-        score = clf.score(X_test, y_test)
+        # score = clf.score(X_test, y_test)
         y_pred = clf.predict(X_test)
         metrics = get_metrics(y_test, y_pred)
 
-        print(f"name: {name}, score: {score}, metrics: {metrics}")
+        try:
+            rocauc = round(roc_auc_score(y_test, y_pred), 2)
+            print(rocauc)
+        except:
+            print(f"rocauc failed")
+
+        # print(f"name: {name}, metrics: {metrics}")
+        record = {
+            "model": name,
+        }
+        record.update(metrics)
+        list_records.append(record)
+
+    df_eval = pd.DataFrame.from_records(list_records)
+    print(df_eval)
+    return df_eval
 
 
 def get_metrics(y_actual, y_pred):
@@ -108,7 +125,7 @@ def split_data(df_data, test_size=0.35, random_state=42):
     columns = [item for item in columns if item not in remove_cols]
     x = df_data[columns]
     X_train, X_test, y_train, y_test = train_test_split(
-        x, y, test_size=test_size, random_state=random_state
+        x, y, test_size=test_size, random_state=random_state, stratify=y
     )
 
     return X_train, X_test, y_train, y_test
@@ -118,10 +135,14 @@ def main():
     out_path = os.path.join(constants.DIR_OUTPUTS, f"df_ensemble.csv")
     print(f"Reading ensemble dataset from: {out_path}")
 
-    ensemble.create_ensembled_features()
+    # ensemble.create_ensembled_features()
 
     df_data = pd.read_csv(out_path)
-    train_models(df_data)
+    df_eval = train_models(df_data)
+
+    out_path = os.path.join(constants.DIR_OUTPUTS, f"df_eval.csv")
+    print(f"Writing ensemble evaluation to: {out_path}")
+    df_eval.to_csv(out_path, index=False)
 
 
 if __name__ == '__main__':
