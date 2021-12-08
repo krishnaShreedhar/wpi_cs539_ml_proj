@@ -223,7 +223,7 @@ def parse_args():
 
 def main():
     args = parse_args()
-    create_ensembled_features(args)
+    create_ensembled_features()
 
 
 if __name__ == '__main__':
