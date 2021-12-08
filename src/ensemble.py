@@ -12,10 +12,17 @@ import constants
 
 def get_intermediate_output_1(model, data, layer_name='my_layer'):
     input_data = np.expand_dims(data, axis=0)
+    layers = model.layers
+    layer_index = 0
+    for l_index, layer in enumerate(layers):
+        if layer.name == layer_name:
+            layer_index = l_index
+            break
     extractor = keras.Model(inputs=model.inputs,
                             outputs=[layer.output for layer in model.layers])
     features = extractor(input_data)
-    return features
+    layer_features = features[layer_index].numpy().flatten()
+    return layer_features
 
 
 def get_intermediate_output_2(model, data, layer_name='my_layer'):
@@ -35,14 +42,19 @@ def get_varied_features(list_models, list_model_paths, list_scans):
             "d_id": dict_data["d_id"],
             "label": dict_data["label"]
         }
+        scans = _get_scans(dict_tmp["d_id"], dict_tmp["label"])
         for m_index, model in enumerate(list_models):
             mri_type = list_model_paths[m_index]["mri_type"]
-            npa_data = dict_data["scans"][mri_type]
+            npa_data = scans[mri_type]
 
             if npa_data is not None:
                 layer_name = "dense_3"
                 layer_output = get_intermediate_output_1(model, npa_data, layer_name=layer_name)
                 dict_tmp[f"{mri_type}_{layer_name}"] = layer_output
+
+                # layer_name = "dense_3"
+                # layer_output_2 = get_intermediate_output_2(model, npa_data, layer_name=layer_name)
+                # dict_tmp[f"{mri_type}_{layer_name}"] = layer_output
 
                 layer_name = "dense_2"
                 layer_output = get_intermediate_output_1(model, npa_data, layer_name=layer_name)
@@ -85,6 +97,7 @@ def load_models(list_paths):
 
 
 def _get_scans(patient_id, label):
+    print(f"Scanning data for: d_id: {patient_id} label: {label}")
     mri_types = constants.mri_types
     dict_scans = dict()
     status = True
@@ -103,17 +116,17 @@ def _get_scans(patient_id, label):
     return dict_scans
 
 
-def get_all_data(list_data_paths):
-    list_scans = []
-    for dict_data in list_data_paths:
-        dict_scans = {
-            "d_id": dict_data["d_id"],
-            "label": dict_data["label"],
-            "scans": _get_scans(dict_data["d_id"], dict_data["label"])
-        }
-
-        list_scans.append(dict_scans)
-    return list_scans
+# def get_all_data(list_data_paths):
+#     list_scans = []
+#     for dict_data in list_data_paths:
+#         dict_scans = {
+#             "d_id": dict_data["d_id"],
+#             "label": dict_data["label"],
+#             "scans": _get_scans(dict_data["d_id"], dict_data["label"])
+#         }
+#
+#         list_scans.append(dict_scans.copy())
+#     return list_scans
 
 
 def get_list_model_paths():
@@ -157,12 +170,13 @@ def create_ensembled_features(args):
     list_data_paths = get_list_data_paths()
 
     list_models = load_models(list_model_paths)
-    list_scans = get_all_data(list_data_paths)
-    list_records = get_varied_features(list_models, list_model_paths, list_scans)
+    # list_scans = get_all_data(list_data_paths)
+    list_records = get_varied_features(list_models, list_model_paths, list_data_paths)
 
     df_ensemble = pd.DataFrame.from_records(list_records)
 
     out_path = os.path.join(constants.DIR_OUTPUTS, f"df_ensemble.csv")
+    print(f"Writing ensemble dataset to: {out_path}")
     df_ensemble.to_csv(out_path, index=False)
 
 

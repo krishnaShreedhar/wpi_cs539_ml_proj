@@ -29,8 +29,8 @@ import nibabel as nib
 import itertools
 import os
 
-from google.colab import drive
-drive.mount('/content/drive')
+# from google.colab import drive
+# drive.mount('/content/drive')
 
 if tf.test.gpu_device_name():
     print('Default GPU Device: {}'.format(tf.test.gpu_device_name()))
@@ -42,7 +42,7 @@ print()
 from tensorflow.python.client import device_lib
 print(device_lib.list_local_devices())
 
-!unzip '/content/drive/MyDrive/Copia de T1wCE.zip'
+# !unzip '/content/drive/MyDrive/Copia de T1wCE.zip'
 
 """# **Validate loading of Training and Testing Data**"""
 
