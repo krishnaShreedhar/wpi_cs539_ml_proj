@@ -165,6 +165,18 @@ def get_list_data_paths():
     return list_data_paths
 
 
+def flatten_cols(df_data):
+    cols = constants.mri_types
+    cols = ["T1w_dense_3", "T1w_dense_2"]
+    for col in cols:
+        len_col = len(df_data[col][0])
+        new_cols = [f"{col}_{x}" for x in range(len_col)]
+        df_data[new_cols] = pd.DataFrame(df_data[col].tolist(), index=df_data.index)
+        del df_data[col]
+
+    return df_data
+
+
 def create_ensembled_features(args):
     list_model_paths = get_list_model_paths()
     list_data_paths = get_list_data_paths()
@@ -174,6 +186,7 @@ def create_ensembled_features(args):
     list_records = get_varied_features(list_models, list_model_paths, list_data_paths)
 
     df_ensemble = pd.DataFrame.from_records(list_records)
+    df_ensemble = flatten_cols(df_ensemble)
 
     out_path = os.path.join(constants.DIR_OUTPUTS, f"df_ensemble.csv")
     print(f"Writing ensemble dataset to: {out_path}")
