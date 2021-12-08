@@ -9,9 +9,10 @@ tqdm.pandas()
 
 class MRIDataHandler:
 
-    def __init__(self, all_data_path, base_path="../../../new_data/"):
+    def __init__(self, all_data_path, base_path="../../../new_data/", train_labels="../data/train_labels.csv"):
         self.csv_path = all_data_path
         self.df_data = pd.read_csv(all_data_path)
+        self.df_labels = pd.read_csv(train_labels)
         self.extract_id_from_path()
         self.base_path = base_path
         self.mri_types = constants.mri_types
@@ -38,6 +39,12 @@ class MRIDataHandler:
         gt_label = self._get_row_from_id(patient_id)['gt_label']
         return gt_label
 
+    def get_label_1(self, patient_id):
+        str_id = self.get_str_patient_id(patient_id)
+        cond_id = self.df_labels["BraTS21ID"] == str_id
+        gt_label = self.df_labels[cond_id]["MGMT_value"]
+        return gt_label
+
     @staticmethod
     def get_str_patient_id(patient_id):
         str_id = str(patient_id).zfill(5)
@@ -50,4 +57,32 @@ class MRIDataHandler:
         mri_path = os.path.join(self.base_path, mri_type, f"{str_id}.nii")
         return mri_path
 
-    def
+    def gen_data_list(self, list_mri_types=None):
+        if list_mri_types is None:
+            list_mri_types = self.mri_types
+
+        list_ids = list(self.df_data["d_id"].unique_values())
+
+        list_records = []
+        list_data_paths = []
+        for id in list_ids:
+            status = True
+            dict_tmp = {
+                "d_id": id,
+                "label": self.get_label_1(id)
+            }
+            for mri_type in list_mri_types:
+                mri_path = self.get_mri_path(id, mri_type)
+                if os.path.exists(mri_path):
+                    dict_tmp[f"{mri_type}_path"] = mri_path
+                else:
+                    status = False
+            if status:
+                list_records.append(dict_tmp.copy())
+                list_data_paths.append({"d_id": id, "label": self.get_label_1(id)})
+
+        df_records = pd.DataFrame.from_records(list_records)
+        out_path = os.path.join(constants.DIR_OUTPUTS, f"fmt_all_mri_types.csv")
+        print(f"Writing all dataset to: {out_path}")
+        df_records.to_csv(out_path, index=False)
+
