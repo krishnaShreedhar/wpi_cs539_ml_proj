@@ -501,7 +501,11 @@ def train_resnet(mri_type, fold_num, train_dataset, validation_dataset,
     # Build model.
     model = ResNet50(input_shape, classes=classes)
     model.summary()
-    str_report += f"\n {model.summary()}"
+
+    list_str_summary = []
+    model.summary(print_fn=lambda x: list_str_summary.append(f"{x}"))
+    summary = '\n'.join(list_str_summary)
+    str_report += f"\n {summary}"
 
     # Compile model.
     # decay rate for the exponential learning rate scheduler
@@ -519,7 +523,7 @@ def train_resnet(mri_type, fold_num, train_dataset, validation_dataset,
 
     # Define callbacks.
     model_path = os.path.join(constants.DIR_MODELS,
-                              f"3d_img_cls_resnet50_{mri_type}_{fold_num}.h5")
+                              f"3d_img_cls_resnet50_{mri_type}_std.h5")
     checkpoint_cb = keras.callbacks.ModelCheckpoint(
         model_path, save_best_only=True
     )
@@ -564,7 +568,11 @@ def train_cnn(mri_type, fold_num, train_dataset, validation_dataset,
     # Build model.
     model = get_model(width=w_width, height=h_height, depth=d_depth)
     model.summary()
-    str_report += f"\n {model.summary()}"
+
+    list_str_summary = []
+    model.summary(print_fn=lambda x: list_str_summary.append(f"{x}"))
+    summary = '\n'.join(list_str_summary)
+    str_report += f"\n {summary}"
 
     initial_learning_rate = initial_lr
     lr_schedule = keras.optimizers.schedules.ExponentialDecay(
@@ -580,7 +588,7 @@ def train_cnn(mri_type, fold_num, train_dataset, validation_dataset,
 
     # Define callbacks.
     model_path = os.path.join(constants.DIR_MODELS,
-                              f"3d_img_cls_cnn_{mri_type}_{fold_num}.h5")
+                              f"3d_img_cls_cnn_{mri_type}_std.h5")
     checkpoint_cb = keras.callbacks.ModelCheckpoint(
         model_path, save_best_only=True
     )
