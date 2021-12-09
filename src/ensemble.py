@@ -102,7 +102,7 @@ def load_models(list_paths):
     return list_models
 
 
-def _get_scans(patient_id, label):
+def _get_scans(patient_id, label, width=192, height=192, depth=60):
     print(f"Scanning data for: d_id: {patient_id} label: {label}")
     mri_types = constants.mri_types
     dict_scans = dict()
@@ -111,7 +111,10 @@ def _get_scans(patient_id, label):
         path = f"../data/project_folder_correct_{mri_type}/" \
                f"cross_val_folds/fold_3/train/{label}/{str(patient_id).zfill(5)}.nii"
         try:
-            dict_scans[mri_type] = utils.process_scan(path)
+            dict_scans[mri_type] = utils.process_scan(path,
+                                                      desired_width=width,
+                                                      desired_height=height,
+                                                      desired_depth=depth)
         except:
             status = False
             print(f"Failed: Patient: {patient_id}, Scan: {mri_type}, Label: {label}")
@@ -122,7 +125,8 @@ def _get_scans(patient_id, label):
     return dict_scans
 
 
-def _get_scans_1(patient_id, label, base_path="../../../new_data/"):
+def _get_scans_1(patient_id, label, base_path="../../../new_data/",
+                 width=192, height=192, depth=60):
     str_report = ""
     str_report += f"\nScanning data for: d_id: {patient_id} label: {label}"
     mri_types = constants.mri_types
@@ -132,7 +136,11 @@ def _get_scans_1(patient_id, label, base_path="../../../new_data/"):
         str_id = str(patient_id).zfill(5)
         mri_path = os.path.join(base_path, mri_type, f"{str_id}.nii")
         try:
-            dict_scans[mri_type] = utils.process_scan(mri_path)
+            dict_scans[mri_type] = utils.process_scan(mri_path,
+                                                      desired_width=width,
+                                                      desired_height=height,
+                                                      desired_depth=depth)
+
         except:
             status = False
             str_report += f"\nFailed: Patient: {patient_id}, Scan: {mri_type}, Label: {label}"
