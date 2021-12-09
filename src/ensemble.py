@@ -6,6 +6,7 @@ from tensorflow.keras import layers
 from tensorflow.keras import Sequential
 import pandas as pd
 import numpy as np
+import datetime as dtime
 
 import utils
 import constants
@@ -260,7 +261,8 @@ def create_ensembled_features():  # send args if required
     df_ensemble = pd.DataFrame.from_records(list_records)
     df_ensemble = flatten_cols(df_ensemble)
 
-    out_path = os.path.join(constants.DIR_OUTPUTS, f"df_ensemble_std.csv")
+    str_ts = dtime.datetime.now().strftime(constants.ts_fmt)
+    out_path = os.path.join(constants.DIR_OUTPUTS, f"df_ensemble_{str_ts}.csv")
     print(f"Writing ensemble dataset to: {out_path}")
     df_ensemble.to_csv(out_path, index=False)
 

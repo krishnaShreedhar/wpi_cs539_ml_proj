@@ -17,6 +17,7 @@ import os
 import pandas as pd
 import numpy as np
 from tqdm import tqdm
+import datetime as dtime
 from prettytable import PrettyTable
 
 import constants
@@ -187,7 +188,8 @@ def main():
     df_data = pd.read_csv(out_path)
     df_eval = train_models(df_data)
 
-    out_path = os.path.join(constants.DIR_OUTPUTS, f"df_eval_std.csv")
+    str_ts = dtime.datetime.now().strftime(constants.ts_fmt)
+    out_path = os.path.join(constants.DIR_OUTPUTS, f"df_eval_{str_ts}.csv")
     print(f"Writing ensemble evaluation to: {out_path}")
     df_eval.to_csv(out_path, index=False)
 
