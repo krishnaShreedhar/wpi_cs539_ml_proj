@@ -12,12 +12,17 @@ from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
 from sklearn.metrics import roc_auc_score, accuracy_score, precision_score, recall_score, f1_score
 from sklearn.metrics import confusion_matrix
 
+import ast
 import os
 import pandas as pd
+import numpy as np
+from tqdm import tqdm
 from prettytable import PrettyTable
 
 import constants
 import ensemble
+
+tqdm.pandas()
 
 
 def get_classifiers():
@@ -137,8 +142,44 @@ def split_data(df_data, test_size=0.35, random_state=42):
     return X_train, X_test, y_train, y_test
 
 
+def fix_row(text):
+    return ast.literal_eval(text)
+
+
+def fix_np(text):
+    return np.fromstring(text[1:-1], dtype=np.float, sep=' ')
+
+
+def fix_list(df_data, cols):
+    for col in cols:
+        print(col)
+        df_data[col] = df_data.progress_apply(lambda row: fix_np(row[col]), axis=1)
+    return df_data
+
+
+def alt_run():
+    out_path = os.path.join(constants.DIR_DATA, f"df_ensemble.csv")
+    print(f"Reading ensemble dataset from: {out_path}")
+
+    df_ensemble = pd.read_csv(out_path)
+    cols = ["T2w_fc1", "T2w_dense_2",
+            "T1wCE_dense_3", "T1wCE_dense_2",
+            "FLAIR_fc1", "FLAIR_dense_2"]
+    df_ensemble = fix_list(df_ensemble, cols)
+    df_ensemble = ensemble.flatten_cols(df_ensemble)
+
+    out_path = os.path.join(constants.DIR_OUTPUTS, f"df_ensemble_flat.csv")
+    df_ensemble.to_csv(out_path, index=False)
+
+    df_eval = train_models(df_ensemble)
+
+    out_path = os.path.join(constants.DIR_OUTPUTS, f"df_eval_1.csv")
+    print(f"Writing ensemble evaluation to: {out_path}")
+    df_eval.to_csv(out_path, index=False)
+
+
 def main():
-    out_path = os.path.join(constants.DIR_OUTPUTS, f"df_ensemble.csv")
+    out_path = os.path.join(constants.DIR_OUTPUTS, f"df_ensemble_std.csv")
     print(f"Reading ensemble dataset from: {out_path}")
 
     ensemble.create_ensembled_features()
@@ -146,9 +187,11 @@ def main():
     df_data = pd.read_csv(out_path)
     df_eval = train_models(df_data)
 
-    out_path = os.path.join(constants.DIR_OUTPUTS, f"df_eval.csv")
+    out_path = os.path.join(constants.DIR_OUTPUTS, f"df_eval_std.csv")
     print(f"Writing ensemble evaluation to: {out_path}")
     df_eval.to_csv(out_path, index=False)
+
+    # alt_run()
 
 
 if __name__ == '__main__':

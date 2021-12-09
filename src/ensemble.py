@@ -163,25 +163,25 @@ def get_list_model_paths():
     list_model_paths = [
         {
             "m_id": "3dcnn_T1w_1",
-            "path": "../models/best/3d_image_classification_simple_T1w_1.h5",
+            "path": "../models/std/3d_img_cls_cnn_T1w_std.h5",
             "model_type": "3dcnn",
             "mri_type": "T1w"
         },
         {
             "m_id": "resnet_T2w_1",
-            "path": "../models/best/3d_image_classification_resnet50_T2w_1.h5",
+            "path": "../models/std/3d_img_cls_resnet50_T2w_std.h5",
             "model_type": "resnet",
             "mri_type": "T2w"
         },
         {
             "m_id": "3dcnn_T1wCE_4",
-            "path": "../models/best/3d_img_cls_cnn_T1wCE_4.h5",
+            "path": "../models/std/3d_img_cls_cnn_T1wCE_std.h5",
             "model_type": "3dcnn",
             "mri_type": "T1wCE"
         },
         {
             "m_id": "resnet_FLAIR_1",
-            "path": "../models/best/3d_img_cls_resnet50_FLAIR_1.h5",
+            "path": "../models/std/3d_img_cls_resnet50_FLAIR_std.h5",
             "model_type": "resnet",
             "mri_type": "FLAIR"
         },
@@ -260,7 +260,7 @@ def create_ensembled_features():  # send args if required
     df_ensemble = pd.DataFrame.from_records(list_records)
     df_ensemble = flatten_cols(df_ensemble)
 
-    out_path = os.path.join(constants.DIR_OUTPUTS, f"df_ensemble.csv")
+    out_path = os.path.join(constants.DIR_OUTPUTS, f"df_ensemble_std.csv")
     print(f"Writing ensemble dataset to: {out_path}")
     df_ensemble.to_csv(out_path, index=False)
 
