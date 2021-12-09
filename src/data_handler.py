@@ -38,8 +38,8 @@ class MRIDataHandler:
         return gt_label
 
     def get_label_1(self, patient_id):
-        str_id = self.get_str_patient_id(patient_id)
-        cond_id = self.df_labels["BraTS21ID"] == str_id
+        # str_id = self.get_str_patient_id(patient_id)
+        cond_id = self.df_labels["BraTS21ID"] == patient_id
         list_records = self.df_labels.loc[cond_id].to_dict(orient='records')
         print(f"id: {patient_id}, len: {len(list_records)} \n{list_records}")
         gt_label = list_records[0]["MGMT_value"]
@@ -95,6 +95,9 @@ def main():
     # cond = df["d_id"] == 156
     # T1w_path = df.loc[cond].to_dict(orient='records')[0]["T1w_path"]
     # print(T1w_path)
+
+    # df = pd.read_csv("../data/train_labels.csv")
+    # print(df.head())
 
 
 if __name__ == '__main__':
