@@ -88,7 +88,7 @@ class MRIDataHandler:
 
 
 def main():
-    dh = MRIDataHandler("../data/all_mri_types.csv")
+    dh = MRIDataHandler("../../../new_data/all_mri_types.csv")
     dh.gen_data_list()
 
 
