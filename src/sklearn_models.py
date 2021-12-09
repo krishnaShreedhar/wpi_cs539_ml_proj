@@ -141,7 +141,7 @@ def main():
     out_path = os.path.join(constants.DIR_OUTPUTS, f"df_ensemble.csv")
     print(f"Reading ensemble dataset from: {out_path}")
 
-    # ensemble.create_ensembled_features()
+    ensemble.create_ensembled_features()
 
     df_data = pd.read_csv(out_path)
     df_eval = train_models(df_data)
