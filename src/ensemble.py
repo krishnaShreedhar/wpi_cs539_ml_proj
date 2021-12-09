@@ -232,7 +232,14 @@ def get_list_data_paths(read_str=True):
 
 def flatten_cols(df_data):
     cols = constants.mri_types
-    cols = ["T1w_dense_3", "T1w_dense_2"]
+    # layer_names = [
+    #     {"3dcnn": "dense_3", "resnet": "fc1"},
+    #     {"3dcnn": "dense_2", "resnet": "dense_2"}
+    # ]
+    cols = ["T2w_fc1", "T2w_dense_2",
+            "T1wCE_dense_3", "T1wCE_dense_2",
+            "FLAIR_fc1", "FLAIR_dense_2",
+            "T1w_dense_3", "T1w_dense_2"]
     for col in cols:
         len_col = len(df_data[col][0])
         new_cols = [f"{col}_{x}" for x in range(len_col)]
