@@ -36,12 +36,14 @@ def pretty_dict(dict_x):
     return str_dict
 
 
-def resize_volume(img):
+def resize_volume(img,
+                  desired_width=128,
+                  desired_height=128,
+                  desired_depth=32,
+                  ):
     """Resize across z-axis"""
     # Set the desired depth
-    desired_depth = 32  # 64
-    desired_width = 128
-    desired_height = 128
+
     # Get current depth
     current_depth = img.shape[-1]
     current_width = img.shape[0]
@@ -60,12 +62,19 @@ def resize_volume(img):
     return img
 
 
-def process_scan(path):
+def process_scan(path,
+                 desired_width=128,
+                 desired_height=128,
+                 desired_depth=32,
+                 ):
     """Read and resize volume"""
     # Read scan
     volume = read_nifti_file(path)
     # Normalize
     volume = normalize(volume)
     # Resize width, height and depth
-    volume = resize_volume(volume)
+    volume = resize_volume(volume,
+                           desired_width,
+                           desired_height,
+                           desired_depth)
     return volume
