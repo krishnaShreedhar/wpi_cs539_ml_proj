@@ -32,7 +32,7 @@ class MRIDataHandler:
         cond_id = self.df_data["d_id"] == patient_id
         row = self.df_data[cond_id]
         if return_dict:
-            row = row.to_dict()
+            row = row.to_dict(orient='records')[0]
         return row
 
     def get_label(self, patient_id):
@@ -42,7 +42,7 @@ class MRIDataHandler:
     def get_label_1(self, patient_id):
         str_id = self.get_str_patient_id(patient_id)
         cond_id = self.df_labels["BraTS21ID"] == str_id
-        gt_label = self.df_labels[cond_id]["MGMT_value"]
+        gt_label = self.df_labels.loc[cond_id].to_dict(orient='records')[0]["MGMT_value"]
         return gt_label
 
     @staticmethod
@@ -71,6 +71,7 @@ class MRIDataHandler:
                 "d_id": id,
                 "label": self.get_label_1(id)
             }
+
             for mri_type in list_mri_types:
                 mri_path = self.get_mri_path(id, mri_type)
                 if os.path.exists(mri_path):
@@ -86,10 +87,17 @@ class MRIDataHandler:
         print(f"Writing all dataset to: {out_path}")
         df_records.to_csv(out_path, index=False)
 
+        return list_data_paths
+
 
 def main():
-    dh = MRIDataHandler("../data/all_mri_types.csv")
-    dh.gen_data_list()
+    # dh = MRIDataHandler("../data/all_mri_types.csv")
+    # dh.gen_data_list()
+
+    df = pd.read_csv("../data/fmt_all_mri_types.csv")
+    cond = df["d_id"] == 156
+    T1w_path = df.loc[cond].to_dict(orient='records')[0]["T1w_path"]
+    print(T1w_path)
 
 
 if __name__ == '__main__':
