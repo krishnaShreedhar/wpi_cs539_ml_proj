@@ -46,25 +46,26 @@ def get_varied_features(list_models, list_model_paths, list_scans):
             "label": dict_data["label"]
         }
         scans = _get_scans_1(dict_tmp["d_id"], dict_tmp["label"])
-        for m_index, model in enumerate(list_models):
-            mri_type = list_model_paths[m_index]["mri_type"]
-            model_type = list_model_paths[m_index]["model_type"]
-            npa_data = scans[mri_type]
+        if scans['status']:
+            for m_index, model in enumerate(list_models):
+                mri_type = list_model_paths[m_index]["mri_type"]
+                model_type = list_model_paths[m_index]["model_type"]
+                npa_data = scans[mri_type]
 
-            if npa_data is not None:
-                layer_name = layer_names[0][model_type]
-                layer_output = get_intermediate_output_1(model, npa_data, layer_name=layer_name)
-                dict_tmp[f"{mri_type}_{layer_name}"] = layer_output
+                if npa_data is not None:
+                    layer_name = layer_names[0][model_type]
+                    layer_output = get_intermediate_output_1(model, npa_data, layer_name=layer_name)
+                    dict_tmp[f"{mri_type}_{layer_name}"] = layer_output
 
-                # layer_name = "dense_3"
-                # layer_output_2 = get_intermediate_output_2(model, npa_data, layer_name=layer_name)
-                # dict_tmp[f"{mri_type}_{layer_name}"] = layer_output
+                    # layer_name = "dense_3"
+                    # layer_output_2 = get_intermediate_output_2(model, npa_data, layer_name=layer_name)
+                    # dict_tmp[f"{mri_type}_{layer_name}"] = layer_output
 
-                layer_name = layer_names[1][model_type]
-                layer_output = get_intermediate_output_1(model, npa_data, layer_name=layer_name)
-                dict_tmp[f"{mri_type}_{layer_name}"] = layer_output
+                    layer_name = layer_names[1][model_type]
+                    layer_output = get_intermediate_output_1(model, npa_data, layer_name=layer_name)
+                    dict_tmp[f"{mri_type}_{layer_name}"] = layer_output
 
-        list_all_features.append(dict_tmp)
+            list_all_features.append(dict_tmp)
     return list_all_features
 
 
