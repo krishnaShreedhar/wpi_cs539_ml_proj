@@ -1,4 +1,5 @@
 import argparse
+import json
 import os
 from tensorflow import keras
 from tensorflow.keras import layers
@@ -42,7 +43,7 @@ def get_varied_features(list_models, list_model_paths, list_scans):
             "d_id": dict_data["d_id"],
             "label": dict_data["label"]
         }
-        scans = _get_scans(dict_tmp["d_id"], dict_tmp["label"])
+        scans = _get_scans_1(dict_tmp["d_id"], dict_tmp["label"])
         for m_index, model in enumerate(list_models):
             mri_type = list_model_paths[m_index]["mri_type"]
             npa_data = scans[mri_type]
@@ -116,6 +117,31 @@ def _get_scans(patient_id, label):
     return dict_scans
 
 
+def _get_scans_1(patient_id, label, base_path="../../../new_data/"):
+    str_report = ""
+    str_report += f"\nScanning data for: d_id: {patient_id} label: {label}"
+    mri_types = constants.mri_types
+    dict_scans = dict()
+    status = True
+    for mri_type in mri_types:
+        str_id = str(patient_id).zfill(5)
+        mri_path = os.path.join(base_path, mri_type, f"{str_id}.nii")
+        try:
+            dict_scans[mri_type] = utils.process_scan(mri_path)
+        except:
+            status = False
+            str_report += f"\nFailed: Patient: {patient_id}, Scan: {mri_type}, Label: {label}"
+            dict_scans[mri_type] = None
+
+    dict_scans["status"] = status
+    if status:
+        str_report += f" --- succeeded!"
+
+    print(str_report)
+
+    return dict_scans
+
+
 # def get_all_data(list_data_paths):
 #     list_scans = []
 #     for dict_data in list_data_paths:
@@ -147,37 +173,43 @@ def get_list_model_paths():
     return list_model_paths
 
 
-def get_list_data_paths():
-    list_data_paths = [
-        {
-            "d_id": 9,
-            "label": 0
-        },
-        {
-            "d_id": 444,
-            "label": 0
-        },
-        {
-            "d_id": 2,
-            "label": 1
-        },
-        {
-            "d_id": 799,
-            "label": 0
-        },
-        {
-            "d_id": 655,
-            "label": 1
-        },
-        {
-            "d_id": 1010,
-            "label": 0
-        },
-        {
-            "d_id": 1008,
-            "label": 1
-        }
-    ]
+def get_list_data_paths(read_str=True):
+    if read_str:
+        out_path = os.path.join(constants.DIR_OUTPUTS, f"list_data_paths.txt")
+        with open(out_path, "r") as fh:
+            list_data_paths = json.load(fh)
+
+    else:
+        list_data_paths = [
+            {
+                "d_id": 9,
+                "label": 0
+            },
+            {
+                "d_id": 444,
+                "label": 0
+            },
+            {
+                "d_id": 2,
+                "label": 1
+            },
+            {
+                "d_id": 799,
+                "label": 0
+            },
+            {
+                "d_id": 655,
+                "label": 1
+            },
+            {
+                "d_id": 1010,
+                "label": 0
+            },
+            {
+                "d_id": 1008,
+                "label": 1
+            }
+        ]
     return list_data_paths
 
 

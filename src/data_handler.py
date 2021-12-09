@@ -2,6 +2,7 @@ import pandas as pd
 import os
 from tqdm import tqdm
 import constants
+import json
 
 tqdm.pandas()
 
@@ -84,6 +85,10 @@ class MRIDataHandler:
         print(f"Writing all dataset to: {out_path}")
         df_records.to_csv(out_path, index=False)
 
+        out_path = os.path.join(constants.DIR_OUTPUTS, f"list_data_paths.txt")
+        with open(out_path, "w") as fh:
+            json.dump(list_data_paths, fh)
+
         return list_data_paths
 
 
@@ -98,6 +103,24 @@ def main():
 
     # df = pd.read_csv("../data/train_labels.csv")
     # print(df.head())
+
+    # list_data_paths = [
+    #     {
+    #         "d_id": 9,
+    #         "label": 0
+    #     },
+    #     {
+    #         "d_id": 444,
+    #         "label": 0
+    #     }]
+    # out_path = os.path.join(constants.DIR_OUTPUTS, f"list_data_paths.txt")
+    # with open(out_path, "w") as fh:
+    #     json.dump(list_data_paths, fh)
+    #
+    # with open(out_path, "r") as fh:
+    #     list_tmp = json.load(fh)
+    #
+    # print(f"out: {list_tmp}, {type(list_tmp)}")
 
 
 if __name__ == '__main__':
