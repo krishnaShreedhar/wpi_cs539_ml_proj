@@ -35,8 +35,10 @@ def get_intermediate_output_2(model, data, layer_name='my_layer'):
 
 def get_varied_features(list_models, list_model_paths, list_scans):
     list_all_features = []
-    layer_name = {"3dcnn": "dense_2", "resnet": "dense_2"}
-    layer_name = {"3dcnn": "dense_3", "resnet": "fc1"}
+    layer_names = [
+        {"3dcnn": "dense_3", "resnet": "fc1"},
+        {"3dcnn": "dense_2", "resnet": "dense_2"}
+    ]
 
     for d_index, dict_data in enumerate(list_scans):
         dict_tmp = {
@@ -46,10 +48,11 @@ def get_varied_features(list_models, list_model_paths, list_scans):
         scans = _get_scans_1(dict_tmp["d_id"], dict_tmp["label"])
         for m_index, model in enumerate(list_models):
             mri_type = list_model_paths[m_index]["mri_type"]
+            model_type = list_model_paths[m_index]["model_type"]
             npa_data = scans[mri_type]
 
             if npa_data is not None:
-                layer_name = "dense_3"
+                layer_name = layer_names[0][model_type]
                 layer_output = get_intermediate_output_1(model, npa_data, layer_name=layer_name)
                 dict_tmp[f"{mri_type}_{layer_name}"] = layer_output
 
@@ -57,7 +60,7 @@ def get_varied_features(list_models, list_model_paths, list_scans):
                 # layer_output_2 = get_intermediate_output_2(model, npa_data, layer_name=layer_name)
                 # dict_tmp[f"{mri_type}_{layer_name}"] = layer_output
 
-                layer_name = "dense_2"
+                layer_name = layer_names[1][model_type]
                 layer_output = get_intermediate_output_1(model, npa_data, layer_name=layer_name)
                 dict_tmp[f"{mri_type}_{layer_name}"] = layer_output
 
@@ -159,16 +162,29 @@ def get_list_model_paths():
     list_model_paths = [
         {
             "m_id": "3dcnn_T1w_1",
-            "path": "../models/3d_image_classification_simple_T1w_1.h5",
+            "path": "../models/best/3d_image_classification_simple_T1w_1.h5",
             "model_type": "3dcnn",
             "mri_type": "T1w"
         },
         {
-            "m_id": "3dcnn_T2w_1",
-            "path": "../models/3d_image_classification_simple_T2w_1.h5",
-            "model_type": "3dcnn",
+            "m_id": "resnet_T2w_1",
+            "path": "../models/best/3d_image_classification_resnet50_T2w_1.h5",
+            "model_type": "resnet",
             "mri_type": "T2w"
-        }
+        },
+        {
+            "m_id": "3dcnn_T1wCE_4",
+            "path": "../models/best/3d_img_cls_cnn_T1wCE_4.h5",
+            "model_type": "3dcnn",
+            "mri_type": "T1wCE"
+        },
+        {
+            "m_id": "resnet_FLAIR_1",
+            "path": "../models/best/3d_img_cls_resnet50_FLAIR_1.h5",
+            "model_type": "resnet",
+            "mri_type": "FLAIR"
+        },
+
     ]
     return list_model_paths
 
