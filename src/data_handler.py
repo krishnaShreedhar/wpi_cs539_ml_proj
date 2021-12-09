@@ -40,7 +40,9 @@ class MRIDataHandler:
     def get_label_1(self, patient_id):
         str_id = self.get_str_patient_id(patient_id)
         cond_id = self.df_labels["BraTS21ID"] == str_id
-        gt_label = self.df_labels.loc[cond_id].to_dict(orient='records')[0]["MGMT_value"]
+        list_records = self.df_labels.loc[cond_id].to_dict(orient='records')
+        print(f"id: {patient_id}, len: {len(list_records)} \n{list_records}")
+        gt_label = list_records[0]["MGMT_value"]
         return gt_label
 
     @staticmethod
