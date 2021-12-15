@@ -20,6 +20,8 @@ There is an existing work that ensembles multiple architectures trained on the B
 
 ### Description of the dataset
 
+Link to data set: https://www.kaggle.com/c/rsna-miccai-brain-tumor-radiogenomic-classification/data
+
 The data consists of the MRI scans of 585 patients from the BraTS 2021 dataset that labels the MGMT status of the patients. The BraTS 2021 dataset is a comprehensive collection of brain tumor MRI scans of patients from various institutions that use different equipment and imaging protocols that represent heterogeneous image quality and diverse clinical practices from different institutions [1,5]. The data is essentially balanced with 47% being labeled ‘0’ (unmethylated) and 53% being labeled ‘1’ (methylated). As part of the BraTS 2021 data set, the participants are provided with binary class labels denoting their tumor methylation status. Each patient has 4 different scan types (T1w, T2w, FLAIR, and T1wCE) each of which captures unique information of the tumors.
 
 ![image](https://user-images.githubusercontent.com/12739451/145852597-dcdd18a9-e724-496a-89d6-ae2ff4687be3.png)
@@ -54,8 +56,7 @@ The ensemble approach used build high quality classifiers individually, then con
 
 - 4 MRI types
   - Simple 3D-CNN, ResNet-50
-- 4-fold cross-validation
-  - Bullet list item 2 
+- 4-fold cross-validation 
 - Hyperparameter tuning
   - Batch Size
   - Learning Rate
