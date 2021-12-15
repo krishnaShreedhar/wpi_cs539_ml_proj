@@ -56,7 +56,11 @@ The ensemble approach used build high quality classifiers individually, then con
 
 - 4 MRI types
   - Simple 3D-CNN, ResNet-50
-- 4-fold cross-validation 
+- Data Splitting:
+  - 4-fold cross-validation 
+  - Training set (420)
+  - Validation set (106)
+  - Test set (59)
 - Hyperparameter tuning
   - Batch Size
   - Learning Rate
