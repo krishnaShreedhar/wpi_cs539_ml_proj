@@ -104,6 +104,8 @@ Taking the best performing 4 models on the validation set we ensembled them usin
 
 ### Results - Ensemble - Standardized
 
+After examining the sparsity of values learned in the final dense layers of each model indenpendently, we create a smaller data set of each MRI type where the dimensions across all 3 dimensions are roughly the same across all patients. Previosuly each dimension could range in values from extremes of 20 frames to 256+ frames and we were standardizing all these pateints to one size leading to drastic upsampling in some cases and drastic downsampling in others. Once we selected a subset of MRI scans for each scan type, we resized all patient scans to the minimum of that subset of data and re-ran our ensemble models using this data to get the results below.  
+
 |   |   |
 |---|---|
 ![image](https://user-images.githubusercontent.com/12739451/145863495-773e3400-2fbe-406c-bf3c-54c577b1a892.png)  |  ![image](https://user-images.githubusercontent.com/12739451/145863515-7e56b973-9315-4bbe-a125-f9488f504971.png)
