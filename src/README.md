@@ -14,3 +14,18 @@ NOTE: this also takes a bit of time to run and will take up a large amount of me
 3d_model_training.py -- 
 This file is used to run load, preprocess, augment and train the simple 3D CNN and ResNet models. Model (.h5) files are saved for best epoch.
 See run_train_param.sh for sample submission scripts to run this file with possible input parameters
+
+
+test_script.py -- 
+Use this file to load trained models (.h5 files) to assess model performance on your test set data. Output the results (metrics and predicted labels) to a csv file.
+
+demo.py -- 
+Demo code that loads sample data you want to assess and predict a label for. It loads a trained model of your specification, loads and processes the data, and outputs an image with the ground truth (for demo purposes), and a predicted label for that image
+Change lines 78-81 to fit your data/models
+Define what mri type you want to display and predict
+Define where the data is located you want to predict and assess
+Define the path to the models you want to use to do the predictions on your data
+Define a classification threshold to use for assigning "0" and "1" classes, default 0.5
+
+flair_demo.PNG -- 
+A sample output image from demo.py
