@@ -57,7 +57,7 @@ Below is the diagram that puts together all the steps followed to train the indi
 ## Proposed Experiments
 
 - 4 MRI types
-  - Simple 3D-CNN, ResNet-50
+  - Models: Simple 3D-CNN, 3D-ResNet-50
 - Data Splitting:
   - 4-fold cross-validation 
   - Training set (420)
@@ -110,7 +110,7 @@ Taking the best performing 4 models on the validation set we ensembled them usin
 
 ### Results - Ensemble - Standardized
 
-After examining the sparsity of values learned in the final dense layers of each model independently, we create a smaller data set of each MRI type where the dimensions across all 3 dimensions are roughly the same across all patients. Previosuly each dimension could range in values from extremes of 20 frames to 256+ frames and we were standardizing all these patients to one size leading to drastic upsampling in some cases and drastic downsampling in others. Once we selected a subset of MRI scans for each scan type, we resized all patient scans to the minimum of that subset of data and re-ran our ensemble models using this data to get the results below.  
+After examining the sparsity of values learned in the final dense layers of each model independently, we create a smaller data set of each MRI type where the sizes across all 3 dimensions are roughly the same across all patients. Previosuly each dimension could range in values from extremes of 20 frames to 256+ frames and we were setting all these patients to one size leading to drastic upsampling in some cases and drastic downsampling in others. Once we selected a subset of MRI scans for each scan type, we resized all patient scans to the minimum of that subset of data and re-ran our ensemble models using this data to get the results below. We selected images with dimension 1 greater than 192, dimension 2 greater than 256, and dimension 3 greater than 60. 
 
 |   |   |
 |---|---|
