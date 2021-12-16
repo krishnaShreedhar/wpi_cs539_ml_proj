@@ -2,7 +2,7 @@
 
 pip3 install -r requirements.txt
 
-See to make sure the proper CUDA/CuDNN versions are loaded for training with GPU
+See installation_instr.md to make sure the proper CUDA/CuDNN and Python versions are loaded for training with GPU
 
 dcm2nii.py -- 
 Run this file first.
