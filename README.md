@@ -36,7 +36,7 @@ The data consists of the MRI scans of 585 patients from the BraTS 2021 dataset t
 
 ![image](https://user-images.githubusercontent.com/12739451/145865045-44dea87f-2e6f-4025-a160-974fd3b404d9.png)
 
-### ResNet50
+### 3D ResNet50
 
 3D-ResNet50 model is a powerful deep neural networks which has achieved amazing performance results in image classification. The architecture of ResNet50 has 4 stages with a sequence of (3, 4, 6, 3) residual blocks with 3 layers each as shown in the diagram. The addition of the identity connection does not introduce extra parameters. Therefore, the computation complexity for simple deep networks and deep residual networks is almost the same.
 
@@ -44,11 +44,13 @@ The data consists of the MRI scans of 585 patients from the BraTS 2021 dataset t
 
 ### Ensemble Approach
 
-The ensemble approach used build high quality classifiers individually, then concatenate the learned features for each best MRI scan type model, and fine tune an ensemble classifier across 4 MRI scan types.
+To combine the information that each type of scan could provide to classify the tumors, we decided to use an ensemble approach. To do so, first high quality classifiers were trained individually on each type of MRI scans using the proposed network architectures (3D CNN and 3D ResNet50). After the training process of each model was completed, the model with the best performance on each type of scan was selected and the embeddings of the MRI scans that were used for each model to predict the methylated status were extracted (4 vector), concatenated and used as the input to train different supervised classification models like SVM's, decision trees, random forest, neural networks and Naive Bayes to see if they were able to generate better predictions by combining the information of the 4 different types of MRI scans.
 
 ![image](https://user-images.githubusercontent.com/12739451/145855540-71ff0eda-8d6d-4294-9aec-5f3755e45186.png)
 
-### Machine Learning Approach
+### Solution Approach
+
+Below is the diagram that puts together all the steps followed to train the individual models and generate the embedding models. First the MRI scans were extracted and preprocessed. The images of each patient were stacked together to create the volumes with the complete brain, then the values were normalized and the volumes resized to standardize their dimensions given that different patients presented different image dimensions and number of slices so the models could use them as their inputs. After all the volumes were processed, they were split by type and fed into the 3D CNN and 3D ResNet50 models to train them and assess their performance. When the training process was done, for each MRI type the model with the best performance on the validation set was selected and used to generate the embedding needed by the ensemble models to be trained. Finally, the ensemble approach explained before was followed and the performance of the resulting ensembled models were assessed as well and compared.
 
 ![image](https://user-images.githubusercontent.com/12739451/145855429-dd4e8275-8f78-4452-8650-cb5a6d8a29f4.png)
 
