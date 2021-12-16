@@ -12,6 +12,7 @@ print(f"Importing...")
 # Importing dataset
 import argparse
 import datetime
+from sklearn.model_selection import train_test_split
 import os
 import numpy as np
 import pandas as pd
@@ -56,48 +57,48 @@ def read_nifti_file(filepath):
     return scan
 
 
-def normalize(volume):
-    """Normalize the volume"""
-    min = np.min(volume)
-    maxv = np.max(volume)
-    volume = (volume) / (maxv)
-    volume = volume.astype("float32")
-    return volume
+# def normalize(volume):
+#     """Normalize the volume"""
+#     min = np.min(volume)
+#     maxv = np.max(volume)
+#     volume = (volume) / (maxv)
+#     volume = volume.astype("float32")
+#     return volume
 
 
-def resize_volume(img):
-    """Resize across z-axis"""
-    # Set the desired depth
-    desired_depth = 32
-    desired_width = 128
-    desired_height = 128
-    # Get current depth
-    current_depth = img.shape[-1]
-    current_width = img.shape[0]
-    current_height = img.shape[1]
-    # Compute depth factor
-    depth = current_depth / desired_depth
-    width = current_width / desired_width
-    height = current_height / desired_height
-    depth_factor = 1 / depth
-    width_factor = 1 / width
-    height_factor = 1 / height
-    # Rotate
-    img = ndimage.rotate(img, 90, reshape=False)
-    # Resize across z-axis
-    img = ndimage.zoom(img, (width_factor, height_factor, depth_factor), order=1)
-    return img
+# def resize_volume(img):
+#     """Resize across z-axis"""
+#     # Set the desired depth
+#     desired_depth = 32
+#     desired_width = 128
+#     desired_height = 128
+#     # Get current depth
+#     current_depth = img.shape[-1]
+#     current_width = img.shape[0]
+#     current_height = img.shape[1]
+#     # Compute depth factor
+#     depth = current_depth / desired_depth
+#     width = current_width / desired_width
+#     height = current_height / desired_height
+#     depth_factor = 1 / depth
+#     width_factor = 1 / width
+#     height_factor = 1 / height
+#     # Rotate
+#     img = ndimage.rotate(img, 90, reshape=False)
+#     # Resize across z-axis
+#     img = ndimage.zoom(img, (width_factor, height_factor, depth_factor), order=1)
+#     return img
 
 
-def process_scan(path):
-    """Read and resize volume"""
-    # Read scan
-    volume = read_nifti_file(path)
-    # Normalize
-    volume = normalize(volume)
-    # Resize width, height and depth
-    volume = resize_volume(volume)
-    return volume
+# def process_scan(path):
+#     """Read and resize volume"""
+#     # Read scan
+#     volume = read_nifti_file(path)
+#     # Normalize
+#     volume = normalize(volume)
+#     # Resize width, height and depth
+#     volume = resize_volume(volume)
+#     return volume
 
 
 @tf.function
@@ -420,7 +421,7 @@ def parse_args():
     parser.add_argument("--patience",
                         type=int,
                         help="early stopping patience",
-                        default=50)
+                        default=5)
     parser.add_argument("--verbose",
                         type=int,
                         help="verbose",
@@ -428,6 +429,10 @@ def parse_args():
     parser.add_argument("--w_width",
                         type=int,
                         help="w_width",
+                        default=128)
+    parser.add_argument("--h_height",
+                        type=int,
+                        help="h_height",
                         default=128)
     parser.add_argument("--d_depth",
                         type=int,
@@ -485,18 +490,22 @@ def train_resnet(mri_type, fold_num, train_dataset, validation_dataset,
                  verbose=2,
                  classes=2,
                  w_width=128,
+                 h_height=128,
                  d_depth=32
                  ):
     str_report = "\n Training RESNET50"
 
     # Set ResNet model parameters
-    h_height = w_width
     input_shape = (w_width, h_height, d_depth, 1)
 
     # Build model.
     model = ResNet50(input_shape, classes=classes)
     model.summary()
-    str_report += f"\n {model.summary()}"
+
+    list_str_summary = []
+    model.summary(print_fn=lambda x: list_str_summary.append(f"{x}"))
+    summary = '\n'.join(list_str_summary)
+    str_report += f"\n {summary}"
 
     # Compile model.
     # decay rate for the exponential learning rate scheduler
@@ -514,7 +523,7 @@ def train_resnet(mri_type, fold_num, train_dataset, validation_dataset,
 
     # Define callbacks.
     model_path = os.path.join(constants.DIR_MODELS,
-                              f"3d_img_cls_resnet50_{mri_type}_{fold_num}.h5")
+                              f"3d_img_cls_resnet50_{mri_type}_std.h5")
     checkpoint_cb = keras.callbacks.ModelCheckpoint(
         model_path, save_best_only=True
     )
@@ -546,6 +555,7 @@ def train_cnn(mri_type, fold_num, train_dataset, validation_dataset,
               patience=50,
               verbose=2,
               w_width=128,
+              h_height=128,
               d_depth=32
               ):
     str_report = "\n Training 3D CNN"
@@ -555,11 +565,14 @@ def train_cnn(mri_type, fold_num, train_dataset, validation_dataset,
     image = images[0]
     str_report += f"\n Dimension of the MRI scan is: {image.shape}"
 
-    h_height = w_width
     # Build model.
     model = get_model(width=w_width, height=h_height, depth=d_depth)
     model.summary()
-    str_report += f"\n {model.summary()}"
+
+    list_str_summary = []
+    model.summary(print_fn=lambda x: list_str_summary.append(f"{x}"))
+    summary = '\n'.join(list_str_summary)
+    str_report += f"\n {summary}"
 
     initial_learning_rate = initial_lr
     lr_schedule = keras.optimizers.schedules.ExponentialDecay(
@@ -575,7 +588,7 @@ def train_cnn(mri_type, fold_num, train_dataset, validation_dataset,
 
     # Define callbacks.
     model_path = os.path.join(constants.DIR_MODELS,
-                              f"3d_img_cls_cnn_{mri_type}_{fold_num}.h5")
+                              f"3d_img_cls_cnn_{mri_type}_std.h5")
     checkpoint_cb = keras.callbacks.ModelCheckpoint(
         model_path, save_best_only=True
     )
@@ -608,6 +621,7 @@ def train(dict_args):
     patience = dict_args["patience"]
     verbose = dict_args["verbose"]
     w_width = dict_args["w_width"]
+    h_height = dict_args["h_height"]
     d_depth = dict_args["d_depth"]
     classes = dict_args["classes"]
     fold_num = dict_args["fold_num"]
@@ -616,6 +630,28 @@ def train(dict_args):
     batch_size = dict_args["batch_size"]
 
     print(f"Training args: \n{utils.pretty_dict(dict_args)}")
+
+    df_data = pd.read_csv(f"../data/fmt_all_mri_types.csv")
+    test_size = 0.4
+    random_state = 143
+    columns = df_data.columns
+    remove_cols = ["d_id", "label"]
+    y = df_data["label"].tolist()
+    columns = [item for item in columns if item not in remove_cols]
+    x = df_data[columns]
+
+    # Train and test split - 1
+    X_train, X_test, y_train, y_test = train_test_split(
+        x, y, test_size=test_size, random_state=random_state, stratify=y
+    )
+
+    # Validation and test split - 2
+    X_valid, X_test, y_valid, y_test = train_test_split(
+        X_test, y_test, test_size=test_size, random_state=random_state, stratify=y_test
+    )
+    list_x_train_paths = list(X_train[f"{mri_type}_path"])
+    list_x_valid_paths = list(X_valid[f"{mri_type}_path"])
+    list_x_test_paths = list(X_test[f"{mri_type}_path"])
 
     if tf.test.gpu_device_name():
         print('Default GPU Device: {}'.format(tf.test.gpu_device_name()))
@@ -627,13 +663,13 @@ def train(dict_args):
 
     print(device_lib.list_local_devices())
 
-    data_folder = "../../../project_folder_correct_" + mri_type + "/" + "cross_val_folds/" + "fold_" + str(
-        fold_num) + "/"
-    # data_folder = os.getcwd() + '/data/project_folder_FLAIR/cross_val_folds/fold_1/'
-    STR_REPORT = f"\n \n Data folder: {data_folder}"
-
-    train_img_len = len(os.listdir(data_folder + "train/" + "0/")) + len(os.listdir(data_folder + "train/" + "1/"))
-    val_img_len = len(os.listdir(data_folder + "val/" + "0/")) + len(os.listdir(data_folder + "val/" + "1/"))
+    # data_folder = "../../../project_folder_correct_" + mri_type + "/" + "cross_val_folds/" + "fold_" + str(
+    #     fold_num) + "/"
+    # # data_folder = os.getcwd() + '/data/project_folder_FLAIR/cross_val_folds/fold_1/'
+    STR_REPORT = f"\n \n Data folder: ../../../new_data/"
+    #
+    # train_img_len = len(os.listdir(data_folder + "train/" + "0/")) + len(os.listdir(data_folder + "train/" + "1/"))
+    # val_img_len = len(os.listdir(data_folder + "val/" + "0/")) + len(os.listdir(data_folder + "val/" + "1/"))
 
     print("init--1")
 
@@ -641,30 +677,30 @@ def train(dict_args):
     # STR_REPORT += f"\n \n Validation image length: {val_img_len}"
 
     # Training parameters (for current simple model provided by the Jupyter notebook)
-    steps_per_epoch = int(math.ceil(train_img_len / batch_size))
-    validation_steps = int(math.ceil(val_img_len / batch_size))
+    # steps_per_epoch = int(math.ceil(train_img_len / batch_size))
+    # validation_steps = int(math.ceil(val_img_len / batch_size))
 
     # Processing .nii images for train/val/test sets
-    ratings = [0, 1]
-    project_folder = "../../../project_folder_correct_" + mri_type + "/"  # os.getcwd() + '/data/project_folder_FLAIR/'
-    paths_test = []
-    y_test = []
-    for rating in ratings:
-        p = project_folder + 'cross_val_folds/test/' + str(rating) + "/"
-        files = os.listdir(p)
-        for f in files:
-            y_test.append(float(rating))
-            paths_test.append(p + f)
+    # ratings = [0, 1]
+    # project_folder = "../../../project_folder_correct_" + mri_type + "/"  # os.getcwd() + '/data/project_folder_FLAIR/'
+    # paths_test = []
+    # y_test = []
+    # for rating in ratings:
+    #     p = project_folder + 'cross_val_folds/test/' + str(rating) + "/"
+    #     files = os.listdir(p)
+    #     for f in files:
+    #         y_test.append(float(rating))
+    #         paths_test.append(p + f)
 
-    STR_REPORT += f"\n \n Paths test: {paths_test}"
-    STR_REPORT += f"\n {len(paths_test)}{len(y_test)}"
+    STR_REPORT += f"\n \n Paths test: {list_x_test_paths}"
+    STR_REPORT += f"\n {len(list_x_test_paths)}\n{len(y_test)}"
 
     print()
     # patient_scans_test = np.array([process_scan(path) for path in paths_test])
     patient_scans_test = []
-    for i, path in enumerate(paths_test):
+    for i, path in enumerate(list_x_test_paths):
         try:
-            processed_scan = process_scan(path)
+            processed_scan = utils.process_scan(path, w_width, h_height, d_depth)
             patient_scans_test.append(processed_scan)
         except:
             print("Warning Raised")
@@ -672,27 +708,27 @@ def train(dict_args):
 
     patient_scans_test = np.array(patient_scans_test)
 
-    paths_train = []
-    y_train = []
-    for rating in ratings:
-        p = project_folder + 'cross_val_folds/fold_' + str(fold_num) + "/train/" + str(rating) + "/"
-        files = os.listdir(p)
-        for f in files:
-            y_train.append(float(rating))
-            paths_train.append(p + f)
+    # paths_train = []
+    # y_train = []
+    # for rating in ratings:
+    #     p = project_folder + 'cross_val_folds/fold_' + str(fold_num) + "/train/" + str(rating) + "/"
+    #     files = os.listdir(p)
+    #     for f in files:
+    #         y_train.append(float(rating))
+    #         paths_train.append(p + f)
     # STR_REPORT += f"\n Paths train: {paths_train}"
-    print(len(paths_train), len(y_train))
+    print(len(list_x_train_paths), len(y_train))
     print()
     # patient_scans_train = np.array([process_scan(path) for path in paths_train])
     patient_scans_train = []
 
     # limit data considered
-    paths_train = paths_train[:max_data]
+    paths_train = list_x_train_paths[:max_data]
     y_train = y_train[:max_data]
 
     for i, path in enumerate(paths_train):
         try:
-            processed_scan = process_scan(path)
+            processed_scan = utils.process_scan(path, w_width, h_height, d_depth)
             patient_scans_train.append(processed_scan)
         except:
             print("Warning Raised")
@@ -700,28 +736,28 @@ def train(dict_args):
 
     patient_scans_train = np.array(patient_scans_train)
 
-    paths_val = []
-    y_val = []
-    for rating in ratings:
-        p = project_folder + 'cross_val_folds/fold_' + str(fold_num) + '/val/' + str(rating) + "/"
-        files = os.listdir(p)
-        for f in files:
-            # maybe have try-except here to deal with missing .nii files????
-            y_val.append(float(rating))
-            paths_val.append(p + f)
+    # paths_val = []
+    # y_val = []
+    # for rating in ratings:
+    #     p = project_folder + 'cross_val_folds/fold_' + str(fold_num) + '/val/' + str(rating) + "/"
+    #     files = os.listdir(p)
+    #     for f in files:
+    #         # maybe have try-except here to deal with missing .nii files????
+    #         y_val.append(float(rating))
+    #         paths_val.append(p + f)
     # STR_REPORT += f"\n Paths val: {paths_val}"
-    print(len(paths_val), len(y_val))
+    print(len(list_x_valid_paths), len(y_valid))
     print()
     # patient_scans_val = np.array([process_scan(path) for path in paths_val])
     patient_scans_val = []
 
     # limit data considered
-    paths_val = paths_val[:max_data]
-    y_val = y_val[:max_data]
+    paths_val = list_x_valid_paths[:max_data]
+    y_val = y_valid[:max_data]
 
     for i, path in enumerate(paths_val):
         try:
-            processed_scan = process_scan(path)
+            processed_scan = utils.process_scan(path, w_width, h_height, d_depth)
             patient_scans_val.append(processed_scan)
         except:
             print("Warning Raised")
@@ -776,6 +812,7 @@ def train(dict_args):
                                 patience=patience,
                                 verbose=verbose,
                                 w_width=w_width,
+                                h_height=h_height,
                                 d_depth=d_depth
                                 )
 
@@ -789,6 +826,7 @@ def train(dict_args):
                                    patience=patience,
                                    verbose=verbose,
                                    w_width=w_width,
+                                   h_height=h_height,
                                    d_depth=d_depth,
                                    classes=classes
                                    )
@@ -801,7 +839,7 @@ def train(dict_args):
 
 def main():
     """
-    python3 mri_nw_param.py --model_to_train=3dcnn --epochs=1 --initial_lr=0.01 --decay_steps=100000 --decay_rate=0.96 --patience=50 --verbose=2 --w_width=128 --d_depth=32 --classes=2 --fold_num=1 --mri_type=T1w --max_data=4 --batch_size=2
+    python3 3d_model_training.py --model_to_train=3dcnn --epochs=1 --initial_lr=0.01 --decay_steps=100000 --decay_rate=0.96 --patience=50 --verbose=2 --w_width=128 --d_depth=32 --classes=2 --fold_num=1 --mri_type=T1w --max_data=4 --batch_size=2
 
     :return:
     """
