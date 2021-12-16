@@ -73,8 +73,8 @@ Below is the diagram that puts together all the steps followed to train the indi
 - Data augmentation
   - Random rotation
 - Ensemble model
-  - Best model for each MRI type
-  - Variety of classifiers
+  - Use best model for each MRI type
+  - Variety of downstream classifiers
 
 ## Results
 
