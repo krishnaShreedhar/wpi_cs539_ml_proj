@@ -38,7 +38,7 @@ The data consists of the MRI scans of 585 patients from the BraTS 2021 dataset t
 
 ### 3D ResNet50
 
-3D-ResNet50 model is a powerful deep neural networks which has achieved amazing performance results in image classification. The architecture of ResNet50 has 4 stages with a sequence of (3, 4, 6, 3) residual blocks with 3 layers each as shown in the diagram. The addition of the identity connection does not introduce extra parameters. Therefore, the computation complexity for simple deep networks and deep residual networks is almost the same.
+3D-ResNet50 model is a powerful deep neural network which has achieved amazing performance results in image classification. The architecture of ResNet50 has 4 stages with a sequence of (3, 4, 6, 3) residual blocks with 3 layers each as shown in the diagram. The addition of the identity connection does not introduce extra parameters. Therefore, the computation complexity for simple deep networks and deep residual networks is almost the same.
 
 ![image](https://user-images.githubusercontent.com/12739451/145860742-63448cc4-4f92-46a6-9780-6f0e0bba5007.png)
 
