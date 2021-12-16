@@ -1,6 +1,6 @@
 # Program Execution instructions
 
-pip3 install -r requirements.txt
+pip3 install -r ../requirements.txt
 
 See installation_instr.md to make sure the proper CUDA/CuDNN and Python versions are loaded for training with GPU
 
@@ -16,6 +16,7 @@ NOTE: this also takes a bit of time to run and will take up a large amount of me
 
 3d_model_training.py -- 
 This file is used to run load, preprocess, augment and train the simple 3D CNN and ResNet models. Model (.h5) files are saved for best epoch.
+Change line 630 to the appropriate path that your data fodlers from data_splitting.py is output to. 
 See run_train_param.sh for sample submission scripts to run this file with possible input parameters
 
 
