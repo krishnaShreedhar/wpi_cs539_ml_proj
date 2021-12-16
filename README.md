@@ -8,7 +8,7 @@ Felipe Mejias, Jose Raul Gamez Carias, Shreedhar Kodate, Khatera Alizada, Nichol
 
 ## Introduction
 
-Automated identification of brain tumors in MRI has many profound clinical applications in surgical treatment planning, image-guided interventions, monitoring tumor growth, and the generation of radiotherapy maps for treatment plans. However, manual identification of brain tumors on MRI is time-consuming, tedious, and subjective and at times it can require invasive follow-up surgeries [1]. Radiologists perform a manual, qualitative approach to identify tumors on MRI, which becomes impractical when dealing with a large number of patients. The automated solution will expedite the process and will decrease the cost of the procedure. The patients, who would otherwise have to wait for longer periods of time because of manual identification procedures by radiologists, could be diagnosed in a timely manner and start their treatment sooner, saving precious time that could extend their lives.
+Automated identification of brain tumors in MRI has many profound clinical applications in surgical treatment planning, image-guided interventions, monitoring tumor growth, and the generation of radiotherapy maps for treatment plans. However, manual identification of brain tumors on MRI is time-consuming, tedious, and subjective and at times it can require invasive follow-up surgeries [1]. Radiologists perform a manual, qualitative approach to identify tumors on MRI, which becomes impractical when dealing with a large number of patients. The automated solution will expedite the process and will decrease the cost of the procedure. The patients, who would otherwise have to wait for longer periods of time because of manual identification procedures by radiologists, could be diagnosed in a timely manner and start their treatment sooner, saving precious time that could extend their lives.This study aims to classify methylation status of brain tumors using magnetic resonance imaging (MRI). 
 
 
 ## Background
@@ -19,6 +19,8 @@ There is an existing work that ensembles multiple architectures trained on the B
 ## Methodology
 
 ### Description of the dataset
+
+Link to data set: https://www.kaggle.com/c/rsna-miccai-brain-tumor-radiogenomic-classification/data
 
 The data consists of the MRI scans of 585 patients from the BraTS 2021 dataset that labels the MGMT status of the patients. The BraTS 2021 dataset is a comprehensive collection of brain tumor MRI scans of patients from various institutions that use different equipment and imaging protocols that represent heterogeneous image quality and diverse clinical practices from different institutions [1,5]. The data is essentially balanced with 47% being labeled ‘0’ (unmethylated) and 53% being labeled ‘1’ (methylated). As part of the BraTS 2021 data set, the participants are provided with binary class labels denoting their tumor methylation status. Each patient has 4 different scan types (T1w, T2w, FLAIR, and T1wCE) each of which captures unique information of the tumors.
 
@@ -34,7 +36,7 @@ The data consists of the MRI scans of 585 patients from the BraTS 2021 dataset t
 
 ![image](https://user-images.githubusercontent.com/12739451/145865045-44dea87f-2e6f-4025-a160-974fd3b404d9.png)
 
-### ResNet50
+### 3D ResNet50
 
 3D-ResNet50 model is a powerful deep neural networks which has achieved amazing performance results in image classification. The architecture of ResNet50 has 4 stages with a sequence of (3, 4, 6, 3) residual blocks with 3 layers each as shown in the diagram. The addition of the identity connection does not introduce extra parameters. Therefore, the computation complexity for simple deep networks and deep residual networks is almost the same.
 
@@ -42,11 +44,13 @@ The data consists of the MRI scans of 585 patients from the BraTS 2021 dataset t
 
 ### Ensemble Approach
 
-The ensemble approach used build high quality classifiers individually, then concatenate the learned features for each best MRI scan type model, and fine tune an ensemble classifier across 4 MRI scan types.
+To combine the information that each type of scan could provide to classify the tumors, we decided to use an ensemble approach. To do so, first high quality classifiers were trained individually on each type of MRI scans using the proposed network architectures (3D CNN and 3D ResNet50). After the training process of each model was completed, the model with the best performance on each type of scan was selected and the embeddings of the MRI scans that were used for each model to predict the methylated status were extracted (4 vector), concatenated and used as the input to train different supervised classification models like SVM's, decision trees, random forest, neural networks and Naive Bayes to see if they were able to generate better predictions by combining the information of the 4 different types of MRI scans.
 
 ![image](https://user-images.githubusercontent.com/12739451/145855540-71ff0eda-8d6d-4294-9aec-5f3755e45186.png)
 
-### Machine Learning Approach
+### Solution Approach
+
+Below is the diagram that puts together all the steps followed to train the individual models and generate the embedding models. First the MRI scans were extracted and preprocessed. The images of each patient were stacked together to create the volumes with the complete brain, then the values were normalized and the volumes resized to standardize their dimensions given that different patients presented different image dimensions and number of slices so the models could use them as their inputs. After all the volumes were processed, they were split by type and fed into the 3D CNN and 3D ResNet50 models to train them and assess their performance. When the training process was done, for each MRI type the model with the best performance on the validation set was selected and used to generate the embedding needed by the ensemble models to be trained. Finally, the ensemble approach explained before was followed and the performance of the resulting ensembled models were assessed as well and compared.
 
 ![image](https://user-images.githubusercontent.com/12739451/145855429-dd4e8275-8f78-4452-8650-cb5a6d8a29f4.png)
 
@@ -54,8 +58,11 @@ The ensemble approach used build high quality classifiers individually, then con
 
 - 4 MRI types
   - Simple 3D-CNN, ResNet-50
-- 4-fold cross-validation
-  - Bullet list item 2 
+- Data Splitting:
+  - 4-fold cross-validation 
+  - Training set (420)
+  - Validation set (106)
+  - Test set (59)
 - Hyperparameter tuning
   - Batch Size
   - Learning Rate
@@ -102,6 +109,8 @@ Taking the best performing 4 models on the validation set we ensembled them usin
 ![image](https://user-images.githubusercontent.com/12739451/145863527-502b97a0-f1fc-4057-a7cd-8c273d394a7d.png)  |  ![image](https://user-images.githubusercontent.com/12739451/145863537-2f191ead-b94b-44cf-8f57-312dd27f5787.png)
 
 ### Results - Ensemble - Standardized
+
+After examining the sparsity of values learned in the final dense layers of each model independently, we create a smaller data set of each MRI type where the dimensions across all 3 dimensions are roughly the same across all patients. Previosuly each dimension could range in values from extremes of 20 frames to 256+ frames and we were standardizing all these pateints to one size leading to drastic upsampling in some cases and drastic downsampling in others. Once we selected a subset of MRI scans for each scan type, we resized all patient scans to the minimum of that subset of data and re-ran our ensemble models using this data to get the results below.  
 
 |   |   |
 |---|---|
