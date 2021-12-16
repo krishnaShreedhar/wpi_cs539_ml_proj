@@ -33,3 +33,14 @@ Define a classification threshold to use for assigning "0" and "1" classes, defa
 
 flair_demo.PNG -- 
 A sample output image from demo.py
+
+
+
+
+
+
+
+
+new_data_shree.py -- 
+After selecting standardized data of a certain dimension threshold size, combine the filepath to each of those images, thieir ground truth labels, and dimension sizes into one csv file to be used for training.
+
