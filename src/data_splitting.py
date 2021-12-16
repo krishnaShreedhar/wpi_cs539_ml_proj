@@ -8,54 +8,54 @@ import shutil
 import sklearn
 from sklearn.model_selection import StratifiedKFold, StratifiedShuffleSplit, train_test_split
 
-#import tensorflow as tf
-#from tensorflow import keras
-#from tensorflow.keras import layers
+# import tensorflow as tf
+# from tensorflow import keras
+# from tensorflow.keras import layers
 
-#import nibabel as nib
-#from scipy import ndimage
-#import random
-#import matplotlib.pyplot as plt
+# import nibabel as nib
+# from scipy import ndimage
+# import random
+# import matplotlib.pyplot as plt
 
 # Define these parameters
 # fold_num = 1 # fold_x to process and run model with
-folds = 5 # 5 # number of cross val folders to make for train/val split
+folds = 5  # 5 # number of cross val folders to make for train/val split
 test_split_percent = 0.1
 # train_split_percent = 0.85
 # val_split_percent = 1 - train_split_percent
-mri_type = "T1w" # the MRI scan type you want to split and use for the model
+mri_type = "T1w"  # the MRI scan type you want to split and use for the model
 # project_folder = "C:\\Users\\Nick\\Desktop\\WPI\\Machine Learning\\Semester Project\\"
-# patient_folder = project_folder + 'Nifti2\\' # generated nii files from dcm2jpg.py
+# patient_folder = project_folder + 'Nifti2\\' # generated nii files from dcm2nii.py
 project_folder = "project_folder_correct_" + mri_type + "/"
 if not os.path.isdir(project_folder):
     os.makedirs(project_folder)
-patient_folder = 'Nifti/' # generated nii files from dcm2jpg.py
-label_csv = "train_labels.csv" #'E:\\rsna-miccai-brain-tumor-radiogenomic-classification\\train_labels.csv'
+patient_folder = 'Nifti/'  # generated nii files from dcm2nii.py
+label_csv = "train_labels.csv"  # 'E:\\rsna-miccai-brain-tumor-radiogenomic-classification\\train_labels.csv'
 # NOTE: added column in train_labels.csv to pad patient IDs with zero to agree with folder naming convention
 
 # Training parameters (for current simple model provided by the Jupyter notebook)
-epochs = 1 #100
+epochs = 1  # 100
 batch_size = 2
 w_width = 128
 h_height = w_width
 d_depth = 64
-initial_lr = 0.0001 # initial learning rate
-decay_steps = 100000 # # decay steps in the exponential learning rate scheduler
-decay_rate = 0.96 # decay rate for the exponential learning rate scheduler
+initial_lr = 0.0001  # initial learning rate
+decay_steps = 100000  # # decay steps in the exponential learning rate scheduler
+decay_rate = 0.96  # decay rate for the exponential learning rate scheduler
 
 ###########################################################
 ###########################################################
 
-# Load Data -- custom for us, data already downloaded -- preprocess using dcm2jpg.py to get .nii files
+# Load Data -- custom for us, data already downloaded -- preprocess using dcm2nii.py to get .nii files
 mri_types = ['FLAIR', 'T1w', 'T1wCE', 'T2w']
-ratings = ['0', '1'] # possible ratings an image can have
-#patients = os.listdir(patient_folder)
-df_labels = pd.read_csv(label_csv, dtype = str) # str to keep zero padded patient IDs
+ratings = ['0', '1']  # possible ratings an image can have
+# patients = os.listdir(patient_folder)
+df_labels = pd.read_csv(label_csv, dtype=str)  # str to keep zero padded patient IDs
 
 labels = df_labels['MGMT_value'].tolist()
 
-#print(patients)
-#print(len(patients))
+# print(patients)
+# print(len(patients))
 print()
 print(labels)
 print()
@@ -125,14 +125,15 @@ print(df_labels)
 img_names = []
 patients = df_labels["BraTS21ID_padded"].tolist()
 for i_name in patients:
-    img_names.append(i_name+".nii")
+    img_names.append(i_name + ".nii")
 print(img_names)
 print()
 print()
 
 # labels = ["0", "1", "0", "1", "0", "1", "0", "1", "1"] # temporary dummy labels, COMMENT THIS OUT WHEN RUN FOR REAL
 
-X_trainval, X_test, y_trainval, y_test = train_test_split(img_names, labels, test_size=test_split_percent, random_state=7, shuffle=True, stratify=labels)
+X_trainval, X_test, y_trainval, y_test = train_test_split(img_names, labels, test_size=test_split_percent,
+                                                          random_state=7, shuffle=True, stratify=labels)
 print("Train+Val and Test Split")
 print("Train+Val Images: ", X_trainval)
 print("Test Images: ", X_test)
@@ -165,14 +166,15 @@ for testindex in range(0, len(X_test)):
         if not os.path.isdir(class_x):
             os.makedirs(class_x)
     try:
-        shutil.copy(patient_folder + img_name[0:5] + "/" + mri_type + "/" + img_name, test_fold + im_label + "/" + str(img_name))
+        shutil.copy(patient_folder + img_name[0:5] + "/" + mri_type + "/" + img_name,
+                    test_fold + im_label + "/" + str(img_name))
     except Exception:
         print("This image does not exist as Nifti file: ", img_name)
 
 ###########
 ###########
 # Train and Val splitting
-skf = StratifiedKFold(n_splits = folds, random_state = 7, shuffle = True)
+skf = StratifiedKFold(n_splits=folds, random_state=7, shuffle=True)
 train_index_list = []
 valid_index_list = []
 for train_index, valid_index in skf.split(np.zeros(len(X_trainval)), y_trainval):
@@ -207,12 +209,12 @@ for tlist in train_index_list:
                 os.makedirs(class_x)
 
         try:
-            shutil.copy(patient_folder + img_name[0:5] + "/" + mri_type + "/" + img_name, train_fold + im_label + "/" + str(img_name))
+            shutil.copy(patient_folder + img_name[0:5] + "/" + mri_type + "/" + img_name,
+                        train_fold + im_label + "/" + str(img_name))
         except Exception:
             print("This image does not exist as Nifti file: ", img_name)
 
     folder = folder + 1
-
 
 # Make Val folders
 folder = 1
@@ -234,12 +236,12 @@ for vlist in valid_index_list:
             if not os.path.isdir(class_x):
                 os.makedirs(class_x)
         try:
-            shutil.copy(patient_folder + img_name[0:5] + "/" + mri_type + "/" + img_name, val_fold + im_label + "/" + str(img_name))
+            shutil.copy(patient_folder + img_name[0:5] + "/" + mri_type + "/" + img_name,
+                        val_fold + im_label + "/" + str(img_name))
         except Exception:
             print("This image does not exist as Nifti file: ", img_name)
 
     folder = folder + 1
-
 
 # #########
 # #########

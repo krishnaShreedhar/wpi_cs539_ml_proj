@@ -7,8 +7,7 @@ import os
 ##from nibabel import load as load_nii
 import pandas as pd
 
-
-patient_folder = 'train/' # path to the mri train data
+patient_folder = 'train/'  # path to the mri train data
 ##patient_folder = 'temp/'
 patient_list = os.listdir(patient_folder)
 print(patient_list)
@@ -28,12 +27,14 @@ for patient in patient_list:
         if not os.path.isdir(output_file):
             os.makedirs(output_file)
         try:
-            dicom2nifti.dicom_series_to_nifti(original_dicom_directory, output_file+patient+".nii", reorient_nifti=True)
+            dicom2nifti.dicom_series_to_nifti(original_dicom_directory, output_file + patient + ".nii",
+                                              reorient_nifti=True)
         except Exception:
             print("Failed patient: ", patient)
             print("Failed scan type: ", mri_type)
             print()
             log_patient_scan = {'Failed Patient': patient, 'Failed Scan Type': mri_type}
-            df_appended = df.append(log_patient_scan, ignore_index=True) # this line might not be correct..waiting on results
+            df_appended = df.append(log_patient_scan,
+                                    ignore_index=True)  # this line might not be correct..waiting on results
     print()
 df_appended.to_csv("log_failed_patient_scan.csv")
